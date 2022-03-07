@@ -10,55 +10,60 @@
       </db_ref>
    </db_ref_list>
    <zoom_setting>
-      <ZoomStartTime time="149325fs"></ZoomStartTime>
-      <ZoomEndTime time="1796693fs"></ZoomEndTime>
-      <Cursor1Time time="1250000fs"></Cursor1Time>
+      <ZoomStartTime time="0fs"></ZoomStartTime>
+      <ZoomEndTime time="1388001fs"></ZoomEndTime>
+      <Cursor1Time time="150000fs"></Cursor1Time>
    </zoom_setting>
    <column_width_setting>
       <NameColumnWidth column_width="175"></NameColumnWidth>
-      <ValueColumnWidth column_width="138"></ValueColumnWidth>
+      <ValueColumnWidth column_width="130"></ValueColumnWidth>
    </column_width_setting>
-   <WVObjectSize size="10" />
-   <wvobject type="logic" fp_name="/project_tb/UUT/SR/i_clk">
-      <obj_property name="ElementShortName">i_clk</obj_property>
-      <obj_property name="ObjectShortName">i_clk</obj_property>
+   <WVObjectSize size="11" />
+   <wvobject type="logic" fp_name="/project_tb/tb_clk">
+      <obj_property name="ElementShortName">tb_clk</obj_property>
+      <obj_property name="ObjectShortName">tb_clk</obj_property>
    </wvobject>
-   <wvobject type="array" fp_name="/project_tb/UUT/SR/i_data">
-      <obj_property name="ElementShortName">i_data[7:0]</obj_property>
-      <obj_property name="ObjectShortName">i_data[7:0]</obj_property>
+   <wvobject type="array" fp_name="/project_tb/UUT/o_address">
+      <obj_property name="ElementShortName">o_address[15:0]</obj_property>
+      <obj_property name="ObjectShortName">o_address[15:0]</obj_property>
    </wvobject>
-   <wvobject type="logic" fp_name="/project_tb/UUT/SR/i_rst">
+   <wvobject type="logic" fp_name="/project_tb/UUT/MEMR/r_read_num_bytes">
+      <obj_property name="ElementShortName">r_read_num_bytes</obj_property>
+      <obj_property name="ObjectShortName">r_read_num_bytes</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/project_tb/UUT/MEMR/r_serial_ena">
+      <obj_property name="ElementShortName">r_serial_ena</obj_property>
+      <obj_property name="ObjectShortName">r_serial_ena</obj_property>
+   </wvobject>
+   <wvobject type="other" fp_name="/project_tb/UUT/MEMR/r_remaining_bytes">
+      <obj_property name="ElementShortName">r_remaining_bytes</obj_property>
+      <obj_property name="ObjectShortName">r_remaining_bytes</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/project_tb/UUT/MEMR/i_rst">
       <obj_property name="ElementShortName">i_rst</obj_property>
       <obj_property name="ObjectShortName">i_rst</obj_property>
    </wvobject>
-   <wvobject type="logic" fp_name="/project_tb/UUT/SR/i_ena">
-      <obj_property name="ElementShortName">i_ena</obj_property>
-      <obj_property name="ObjectShortName">i_ena</obj_property>
-   </wvobject>
-   <wvobject type="other" fp_name="/project_tb/UUT/SR/r_count">
-      <obj_property name="ElementShortName">r_count</obj_property>
-      <obj_property name="ObjectShortName">r_count</obj_property>
-   </wvobject>
-   <wvobject type="logic" fp_name="/project_tb/UUT/r_fsm_bit">
-      <obj_property name="ElementShortName">r_fsm_bit</obj_property>
-      <obj_property name="ObjectShortName">r_fsm_bit</obj_property>
+   <wvobject type="logic" fp_name="/project_tb/UUT/MEMR/r_curr_bit">
+      <obj_property name="ElementShortName">r_curr_bit</obj_property>
+      <obj_property name="ObjectShortName">r_curr_bit</obj_property>
       <obj_property name="CustomSignalColor">#00FFFF</obj_property>
       <obj_property name="UseCustomSignalColor">true</obj_property>
    </wvobject>
-   <wvobject type="logic" fp_name="/project_tb/UUT/SR/o_res_ena">
-      <obj_property name="ElementShortName">o_res_ena</obj_property>
-      <obj_property name="ObjectShortName">o_res_ena</obj_property>
+   <wvobject type="array" fp_name="/project_tb/UUT/MEMR/i_data">
+      <obj_property name="ElementShortName">i_data[7:0]</obj_property>
+      <obj_property name="ObjectShortName">i_data[7:0]</obj_property>
+      <obj_property name="isExpanded"></obj_property>
    </wvobject>
-   <wvobject type="logic" fp_name="/project_tb/UUT/r_sr_done">
-      <obj_property name="ElementShortName">r_sr_done</obj_property>
-      <obj_property name="ObjectShortName">r_sr_done</obj_property>
+   <wvobject type="logic" fp_name="/project_tb/UUT/i_start">
+      <obj_property name="ElementShortName">i_start</obj_property>
+      <obj_property name="ObjectShortName">i_start</obj_property>
    </wvobject>
-   <wvobject type="logic" fp_name="/project_tb/UUT/r_sr_my_rst">
-      <obj_property name="ElementShortName">r_sr_my_rst</obj_property>
-      <obj_property name="ObjectShortName">r_sr_my_rst</obj_property>
+   <wvobject type="logic" fp_name="/project_tb/UUT/MEMR/o_bit_ok">
+      <obj_property name="ElementShortName">o_bit_ok</obj_property>
+      <obj_property name="ObjectShortName">o_bit_ok</obj_property>
    </wvobject>
-   <wvobject type="logic" fp_name="/project_tb/UUT/r_sr_out_ena">
-      <obj_property name="ElementShortName">r_sr_out_ena</obj_property>
-      <obj_property name="ObjectShortName">r_sr_out_ena</obj_property>
+   <wvobject type="other" fp_name="/project_tb/UUT/MEMR/r_curr_bit_index">
+      <obj_property name="ElementShortName">r_curr_bit_index</obj_property>
+      <obj_property name="ObjectShortName">r_curr_bit_index</obj_property>
    </wvobject>
 </wave_config>
