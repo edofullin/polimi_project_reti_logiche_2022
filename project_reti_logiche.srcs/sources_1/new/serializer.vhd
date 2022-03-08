@@ -89,6 +89,7 @@ if rising_edge(i_clk) and i_ena = '1' then
             
                     r_curr_byte <= i_data;
                     r_curr_byte_ok <= '1';
+                    o_bit_ok <= '0';
                     --r_wait_cycles <= 1; -- wait for propagation
                     
                 else -- byte pronto
@@ -104,7 +105,7 @@ if rising_edge(i_clk) and i_ena = '1' then
                         r_curr_byte_ok <= '0';
                         r_curr_bit_index <= 0;
                         r_remaining_bytes <= r_remaining_bytes - 1;
-                        o_bit_ok <= '0';
+ --                       o_bit_ok <= '0';
                         
                     end if;
                       
@@ -127,5 +128,6 @@ end if;
 end process READ_DATA;
 
 o_address <= r_curr_addr;
+o_input_bit <= r_curr_bit;
 
 end Behavioral;

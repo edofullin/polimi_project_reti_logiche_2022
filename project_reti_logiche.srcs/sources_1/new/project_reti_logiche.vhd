@@ -52,14 +52,29 @@ component mem_reader is
         i_data : in std_logic_vector(7 downto 0);
         o_address : out std_logic_vector(15 downto 0);
         o_input_bit : out std_logic;
-        o_bit_ok : out std_logic
+        o_bit_ok : out std_logic;
+        o_seq_end : out std_logic
     );
 end component mem_reader;
+
+component state_machine is
+    port ( i_input : in std_logic;
+           i_clk : in std_logic;
+           i_ena : in std_logic;
+           i_rst : in std_logic;
+           o_output : out std_logic_vector(1 downto 0);
+           o_out_ok : out std_logic
+    );
+end component state_machine;
 
 signal r_sr_ena : std_logic := '1';
 signal r_fsm_input : std_logic;
 signal r_fsm_bitok : std_logic;
+signal r_seq_end : std_logic := '0';
 
+signal r_sm_output : std_logic_vector(1 downto 0);
+signal r_sm_outok : std_logic;
+signal r_sm_ena : std_logic;
 
 begin
 
@@ -70,12 +85,27 @@ MEMR : mem_reader port map(
     i_ena => r_sr_ena,
     o_address => o_address,
     o_input_bit => r_fsm_input,
-    o_bit_ok => r_fsm_bitok
+    o_bit_ok => r_fsm_bitok,
+    o_seq_end => r_seq_end    
 );
+
+SM : state_machine port map(
+    i_clk => i_clk,
+    i_input => r_fsm_input,
+    i_ena => r_sm_ena,
+    i_rst => i_rst,
+    o_output => r_sm_output,
+    o_out_ok => r_sm_outok
+);
+    
 
 o_en <= '1';
 o_we <= '0';
 r_sr_ena <= '1';
+
+r_sm_ena <= r_fsm_bitok;
+
+
 
 
 end Behavioral;
