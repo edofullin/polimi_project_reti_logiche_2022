@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<wave_config>
+   <wave_state>
+   </wave_state>
+   <db_ref_list>
+      <db_ref path="project_tb_behav.wdb" id="1">
+         <top_modules>
+            <top_module name="project_tb" />
+         </top_modules>
+      </db_ref>
+   </db_ref_list>
+   <zoom_setting>
+      <ZoomStartTime time="1201320fs"></ZoomStartTime>
+      <ZoomEndTime time="2437236fs"></ZoomEndTime>
+      <Cursor1Time time="1750000fs"></Cursor1Time>
+   </zoom_setting>
+   <column_width_setting>
+      <NameColumnWidth column_width="175"></NameColumnWidth>
+      <ValueColumnWidth column_width="122"></ValueColumnWidth>
+   </column_width_setting>
+   <WVObjectSize size="9" />
+   <wvobject type="logic" fp_name="/project_tb/UUT/i_clk">
+      <obj_property name="ElementShortName">i_clk</obj_property>
+      <obj_property name="ObjectShortName">i_clk</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/project_tb/UUT/r_fsm_input">
+      <obj_property name="ElementShortName">r_fsm_input</obj_property>
+      <obj_property name="ObjectShortName">r_fsm_input</obj_property>
+      <obj_property name="CustomSignalColor">#800080</obj_property>
+      <obj_property name="UseCustomSignalColor">true</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/project_tb/UUT/i_rst">
+      <obj_property name="ElementShortName">i_rst</obj_property>
+      <obj_property name="ObjectShortName">i_rst</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/project_tb/UUT/i_data">
+      <obj_property name="ElementShortName">i_data[7:0]</obj_property>
+      <obj_property name="ObjectShortName">i_data[7:0]</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/project_tb/UUT/r_sm_ena">
+      <obj_property name="ElementShortName">r_sm_ena</obj_property>
+      <obj_property name="ObjectShortName">r_sm_ena</obj_property>
+   </wvobject>
+   <wvobject type="other" fp_name="/project_tb/UUT/SM/r_curr_state">
+      <obj_property name="ElementShortName">r_curr_state</obj_property>
+      <obj_property name="ObjectShortName">r_curr_state</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/project_tb/UUT/r_sm_output">
+      <obj_property name="ElementShortName">r_sm_output[1:0]</obj_property>
+      <obj_property name="ObjectShortName">r_sm_output[1:0]</obj_property>
+   </wvobject>
+   <wvobject type="other" fp_name="/project_tb/UUT/MEMR/r_wait_cycles">
+      <obj_property name="ElementShortName">r_wait_cycles</obj_property>
+      <obj_property name="ObjectShortName">r_wait_cycles</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/project_tb/UUT/MEMR/r_curr_byte_ok">
+      <obj_property name="ElementShortName">r_curr_byte_ok</obj_property>
+      <obj_property name="ObjectShortName">r_curr_byte_ok</obj_property>
+   </wvobject>
+</wave_config>
