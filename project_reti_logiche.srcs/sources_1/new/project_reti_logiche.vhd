@@ -1,32 +1,6 @@
-----------------------------------------------------------------------------------
--- Company: 
--- Engineer: 
--- 
--- Create Date: 03/07/2022 05:14:14 PM
--- Design Name: 
--- Module Name: project_reti_logiche - Behavioral
--- Project Name: 
--- Target Devices: 
--- Tool Versions: 
--- Description: 
--- 
--- Dependencies: 
--- 
--- Revision:
--- Revision 0.01 - File Created
--- Additional Comments:
--- 
-----------------------------------------------------------------------------------
-
-
 library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
 use IEEE.NUMERIC_STD.ALL;
-
--- Uncomment the following library declaration if instantiating
--- any Xilinx leaf cells in this code.
---library UNISIM;
---use UNISIM.VComponents.all;
 
 entity project_reti_logiche is
 port (
@@ -44,63 +18,83 @@ end project_reti_logiche;
 
 architecture Behavioral of project_reti_logiche is
 
-signal r_sr_ena : std_logic := '0';
-signal r_fsm_bit : std_logic := '0';
-signal r_sr_out_ena : std_logic;
-signal r_sr_done : std_logic;
-signal r_sr_rst : std_logic;
-signal r_sr_my_rst : std_logic := '0';
+type comp_state is (S0, S1, S2, S3, S4, S5, S6);
 
-signal r_curr_addr : std_logic_vector(15 downto 0) := "0000000000000001";
+signal curr_state, next_state : comp_state;
+signal curr_addr, next_addr : std_logic_vector(15 downto 0);
 
-component serializer is
-    port (
-        i_clk : in std_logic;
-        i_data : in std_logic_vector(7 downto 0);
-        i_rst : in std_logic;
-        i_ena : in std_logic;
-        o_res : out std_logic;
-        o_res_ena : out std_logic;
-        o_done : out std_logic
-    );
-end component serializer;
-
+signal cbyte_end : std_logic := '0';
 
 begin
 
-SR : serializer port map(
-    i_clk => i_clk,
-    i_data => i_data,
-    i_rst => r_sr_rst,
-    i_ena => r_sr_ena,
-    o_res => r_fsm_bit,
-    o_res_ena => r_sr_out_ena,
-    o_done => r_sr_done
-);
+-- gestisce stato corrente in modo sincronizzato
+process(i_clk, i_rst) begin
 
-o_address <= r_curr_addr;
+if i_rst = '1' then
+   curr_state <= S0;
+   curr_addr <= (others => '0');
+elsif rising_edge(i_clk) then
+   curr_state <= next_state;
+   curr_addr <= next_addr;
+end if; 
+
+o_address <= curr_addr;
+
+end process;
+
+process(curr_state, curr_addr, cbyte_end, i_start) begin
+
+next_state <= curr_state;
+next_addr <= curr_addr;
+
+case curr_state is
+    
+    when S0 =>
+        if i_start = '1' then
+            next_state <= S1;
+         end if;
+    when S1 =>
+        next_state <= S2;
+    when S2 =>
+        if cbyte_end = '1' then
+           next_state <= S6;
+        else
+            next_state <= S3;
+            next_addr <= std_logic_vector(unsigned(curr_addr) + 1);
+        end if;
+    when S3 =>
+        next_state <= S4;
+    when S4 =>
+        next_state <= S5;
+    when S5 =>
+        if cbyte_end = '1' then
+            next_state <= S2;
+        else
+            next_state <= S3;
+        end if;
+    when S6 =>
+        next_state <= S0;
+end case;
+end process;
+
+process(curr_state) begin
+
+o_address <= (others => '0');
+
+
+case curr_state is
+    when S0 =>
+    when S1 =>
+    when S2 =>
+    when S3 =>
+    when S4 =>
+    when S5 =>
+    when S6 =>
+end case;
+
+end process;
+
 o_en <= '1';
 o_we <= '0';
-r_sr_ena <= '1';
-r_sr_rst <= i_rst or r_sr_my_rst;
-
-NEWBYTE : process(i_clk) 
-begin
-
-    if rising_edge(i_clk) then
-        
-        if r_sr_my_rst = '1' then
-            r_sr_my_rst <= '0';
-        end if;
-        
-        if r_sr_done = '1' then
-            r_curr_addr <= std_logic_vector(unsigned(r_curr_addr) + 1);
-            r_sr_my_rst <= '1';
-        end if;
-            
-        
-    end if;
-
-end process NEWBYTE;
 
 end Behavioral;
