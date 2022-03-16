@@ -18,34 +18,90 @@ end project_reti_logiche;
 
 architecture Behavioral of project_reti_logiche is
 
+component datapath is
+        Port ( i_data : in STD_LOGIC_VECTOR (7 downto 0);
+           i_clk : in STD_LOGIC;
+           o_outbyte : out STD_LOGIC_VECTOR(7 downto 0);
+           cbyte_load : in STD_LOGIC;
+           sm_ena : in STD_LOGIC;
+           sm_rst : in STD_LOGIC;
+           sm_w_sel : in STD_LOGIC;
+           cbit_load : in STD_LOGIC;
+           cbit_rst : in STD_LOGIC;
+           sr_byte_load : in STD_LOGIC;
+           sr_ena : in STD_LOGIC;
+           nbytes_load : in STD_LOGIC;
+           outbuff_rst : in std_logic;
+           outbuff_load : in std_logic;
+           cnbyte_load : in STD_LOGIC;
+           cnbyte_rst : in STD_LOGIC;
+           seq_end : out STD_LOGIC;
+           cbit_end : out std_logic;
+           o_addr : out STD_LOGIC_VECTOR(15 downto 0);
+           writesel : in std_logic);
+ end component;
+
 type comp_state is (S0, S1, S2, S3, S4, S5, S6);
 
 signal curr_state, next_state : comp_state;
 signal curr_addr, next_addr : std_logic_vector(15 downto 0);
 
-signal cbyte_end : std_logic := '0';
+signal cbyte_load : std_logic; -- abilita caricamento (incremento) del byte corrente
+signal sm_ena : std_logic; -- abilita la macchina a stati
+signal sm_rst : std_logic; -- resetta la macchina a stati
+signal sm_w_sel : std_logic; -- seleziona se scribere bit 0 o 1 dalla macchina a stati bel buff di output
+signal cbit_load : std_logic; -- inutile
+signal cbit_rst : std_logic; -- resetta il bit corrente all'interno del byte a 7
+signal sr_byte_load : std_logic; -- inserisce nuovo byte nello shift register
+signal sr_ena : std_logic; -- abilita lo shift register
+signal nbytes_load : std_logic; -- carica il numero di bytes
+signal outbuff_rst : std_logic; -- resetta buffer di output
+signal outbuff_load : std_logic; -- carica nuovo bit nel buffer di output
+
+signal cnbyte_load : std_logic; -- carica numero totale di byte da processare
+signal cnbyte_rst : std_logic; -- resetta numero totale di byte da processare
+signal seq_end : std_logic; -- viene alzato se la sequenza è terminata
+signal cbit_end : std_logic; -- viene alzato se il byte corrente è processato interamente
+signal writesel : std_logic; -- attivo in scrittura
+
+
 
 begin
+
+DP : datapath port map(
+           i_data,
+           i_clk,
+           o_data,
+           cbyte_load,
+           sm_ena,
+           sm_rst,
+           sm_w_sel,
+           cbit_load,
+           cbit_rst,
+           sr_byte_load,
+           sr_ena,
+           nbytes_load,
+           outbuff_rst,
+           outbuff_load,
+           cnbyte_load,
+           cnbyte_rst,
+           seq_end,
+           cbit_end,
+           o_address,
+           writesel);
 
 -- gestisce stato corrente in modo sincronizzato
 process(i_clk, i_rst) begin
 
 if i_rst = '1' then
    curr_state <= S0;
-   curr_addr <= (others => '0');
 elsif rising_edge(i_clk) then
    curr_state <= next_state;
-   curr_addr <= next_addr;
-end if; 
-
-o_address <= curr_addr;
+end if;
 
 end process;
 
-process(curr_state, curr_addr, cbyte_end, i_start) begin
-
-next_state <= curr_state;
-next_addr <= curr_addr;
+process(curr_state, curr_addr, cbit_end, i_start) begin
 
 case curr_state is
     
@@ -56,18 +112,17 @@ case curr_state is
     when S1 =>
         next_state <= S2;
     when S2 =>
-        if cbyte_end = '1' then
+        if cbit_end = '1' then
            next_state <= S6;
         else
             next_state <= S3;
-            next_addr <= std_logic_vector(unsigned(curr_addr) + 1);
         end if;
     when S3 =>
         next_state <= S4;
     when S4 =>
         next_state <= S5;
     when S5 =>
-        if cbyte_end = '1' then
+        if cbit_end = '1' then
             next_state <= S2;
         else
             next_state <= S3;
@@ -79,22 +134,55 @@ end process;
 
 process(curr_state) begin
 
-o_address <= (others => '0');
+    cbyte_load <= '0';
+    sm_ena <= '0';
+    sm_rst <= '0';
+    sm_w_sel <= '0';
+    cbit_load <= '0';
+    cbit_rst <= '0';
+    sr_byte_load <= '0';
+    sr_ena <= '0';
+    nbytes_load <= '0';
+    outbuff_rst <= '0';
+    outbuff_load <= '0';
+    cnbyte_load <= '0';
+    cnbyte_rst <= '0';
+    seq_end <= '0';
+    cbit_end <= '0';
+    writesel <= '0';
 
 
-case curr_state is
-    when S0 =>
-    when S1 =>
-    when S2 =>
-    when S3 =>
-    when S4 =>
-    when S5 =>
-    when S6 =>
-end case;
+    case curr_state is
+        when S0 =>
+        when S1 =>
+           nbytes_load <= '1';
+           cnbyte_load <= '1';
+           outbuff_rst <= '1';
+           outbuff_load <= '1';
+           cnbyte_rst <= '1';
+           sm_rst <= '1';
+        when S2 =>
+           sr_ena <= '1';
+           sr_byte_load <= '1';
+           cbit_rst <= '1';
+           cbit_load <= '1';
+           sm_ena <= '1';
+        when S3 =>
+           sr_ena <= '1';
+           sm_ena <= '1';
+           cbit_load <= '1';
+        when S4 =>
+           sm_w_sel <= '0';
+           writesel <= '1';
+        when S5 =>
+           sm_w_sel <= '1';
+           writesel <= '1';
+        when S6 =>
+    end case;
 
 end process;
 
 o_en <= '1';
-o_we <= '0';
+o_we <= writesel;
 
 end Behavioral;

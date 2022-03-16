@@ -1,5 +1,6 @@
 library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
+use ieee.numeric_std.all;
 
 entity shift_register_8b is
     Port ( i_load : in std_logic;
@@ -17,7 +18,7 @@ begin
 
 process(i_clk) begin
 
-if rising_edge(i_clk) and i_ena = '1' then
+if falling_edge(i_clk) and i_ena = '1' then
 
 if i_load = '1' then
 
@@ -26,7 +27,7 @@ if i_load = '1' then
 else    
     
     o_srout <= r_mem(7); 
-    r_mem <= r_mem sll 1;
+    r_mem <= std_logic_vector(shift_left(unsigned(r_mem), 1));
     
    
 end if;
