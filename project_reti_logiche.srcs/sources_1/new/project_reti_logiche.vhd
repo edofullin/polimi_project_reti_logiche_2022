@@ -112,23 +112,19 @@ case curr_state is
     when S1 =>
         next_state <= S2;
     when S2 =>
-        if cbit_end = '1' then
-           next_state <= S6;
-        else
-            next_state <= S3;
-        end if;
+         next_state <= S3;
     when S3 =>
         next_state <= S4;
     when S4 =>
         next_state <= S5;
     when S5 =>
+        next_state <= S6;
+    when S6 =>
         if cbit_end = '1' then
             next_state <= S2;
         else
-            next_state <= S3;
+            next_state <= S4;
         end if;
-    when S6 =>
-        next_state <= S0;
 end case;
 end process;
 
@@ -169,15 +165,18 @@ process(curr_state) begin
            sm_ena <= '1';
         when S3 =>
            sr_ena <= '1';
-           sm_ena <= '1';
-           cbit_load <= '1';
+           sm_ena <= '0';
+           sr_byte_load <= '1';
         when S4 =>
-           sm_w_sel <= '0';
-           writesel <= '1';
+           sr_ena <= '1';
         when S5 =>
-           sm_w_sel <= '1';
-           writesel <= '1';
+           sm_w_sel <= '0';
+           outbuff_load <= '1'; 
         when S6 =>
+           sm_w_sel <= '1';
+           outbuff_load <= '1';
+           cbit_load <= '1';
+    
     end case;
 
 end process;

@@ -58,7 +58,7 @@ component state_machine is
            i_rst : in STD_LOGIC;
            i_clk : in STD_LOGIC;
            i_in : in STD_LOGIC;
-           o_out : in STD_LOGIC_VECTOR (1 downto 0));
+           o_out : out STD_LOGIC_VECTOR (1 downto 0));
 end component;
 
 component shift_register_8b is
@@ -127,7 +127,7 @@ cbit_end <= '1' when cbit = 0 else '0';
  process(i_clk, cbit_rst) begin
     if cbit_rst = '1' then
         cbit <= "111";
-    elsif cbit_load = '1' then
+    elsif rising_edge(i_clk) and cbit_load = '1' then
         cbit <= cbit - 1;
     end if;
  end process;

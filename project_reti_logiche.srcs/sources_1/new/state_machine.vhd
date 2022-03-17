@@ -36,12 +36,13 @@ entity state_machine is
            i_rst : in STD_LOGIC;
            i_clk : in STD_LOGIC;
            i_in : in STD_LOGIC;
-           o_out : in STD_LOGIC_VECTOR (1 downto 0));
+           o_out : out STD_LOGIC_VECTOR (1 downto 0));
 end state_machine;
 
 architecture Behavioral of state_machine is
 
 begin
 
+o_out <= "10";
 
 end Behavioral;
