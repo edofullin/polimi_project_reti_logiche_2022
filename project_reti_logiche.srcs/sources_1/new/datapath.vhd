@@ -36,15 +36,13 @@ entity datapath is
            sm_ena : in STD_LOGIC;
            sm_rst : in STD_LOGIC;
            sm_w_sel : in STD_LOGIC;
-           cbit_load : in STD_LOGIC;
-           cbit_rst : in STD_LOGIC;
+           curr_load : in STD_LOGIC;
+           curr_rst : in STD_LOGIC;
            sr_byte_load : in STD_LOGIC;
            sr_ena : in STD_LOGIC;
            nbytes_load : in STD_LOGIC;
            outbuff_rst : in std_logic;
            outbuff_load : in std_logic;
-           cnbyte_load : in STD_LOGIC;
-           cnbyte_rst : in STD_LOGIC;
            seq_end : out STD_LOGIC;
            cbit_end : out std_logic;
            writesel : in std_logic;
@@ -71,15 +69,18 @@ end component;
 
 signal sm_input: std_logic := '0';
 signal sm_output : std_logic_vector(1 downto 0);
+
 signal curr_out_bit : std_logic;
 signal curr_out_bit_vec : std_logic_vector(7 downto 0);
 signal currbit_shift : std_logic_vector(7 downto 0);
-signal cbit : unsigned(2 downto 0);
+
 signal outbuff : std_logic_vector(7 downto 0);
 signal outbuff_mux : std_logic_vector(7 downto 0);
 
 signal nbytes : unsigned(7 downto 0);
-signal currbyte : unsigned(15 downto 0);
+signal curr_pos : std_logic_vector(10 downto 0); -- 3 bit for current bit (LSB) and 8 for current byte (MSB)
+
+signal out_pos : std_logic_vector(15 downto 0);
 
 begin
 
@@ -101,6 +102,10 @@ with sm_w_sel select
     curr_out_bit <= sm_output(0) when '0',
                     sm_output(1) when '1',
                     'X' when others;
+with sm_w_sel select
+     out_pos <= std_logic_vector(shift_left(unsigned(curr_pos), 1)) when '0',
+                std_logic_vector(shift_left(unsigned(curr_pos), 1) + 1) when '1',
+                (others => 'X') when others;
 
 with outbuff_rst select
     outbuff_mux <= (others => '0') when '1',
@@ -108,28 +113,20 @@ with outbuff_rst select
                    (others => 'X') when others;
 
 with writesel select
-    o_addr <= std_logic_vector(currbyte + 1000) when '1',
-              std_logic_vector(currbyte + 1) when '0',
+    o_addr <= std_logic_vector(unsigned(curr_pos(10 downto 3)) + 1000) when '1',
+              std_logic_vector(unsigned(curr_pos(10 downto 3)) + 1) when '0',
               (others => 'X') when others;  
 
-seq_end <= '1' when nbytes - currbyte = 1 else '0';
-cbit_end <= '1' when cbit = 0 else '0';
+seq_end <= '1' when nbytes - unsigned(curr_pos(10 downto 3)) = 1 else '0';
+cbit_end <= '1' when curr_pos(2 downto 0) = "000" else '0';
                    
- process(curr_out_bit_vec, cbit) begin
-    currbit_shift <= std_logic_vector(shift_left(unsigned(curr_out_bit_vec), to_integer(cbit)));
+ process(curr_out_bit_vec, curr_pos) begin
+    currbit_shift <= std_logic_vector(shift_left(unsigned(curr_out_bit_vec), to_integer(unsigned(out_pos(2 downto 0)))));
  end process;
  
  process(curr_out_bit) begin
     curr_out_bit_vec(7 downto 1) <= "0000000";
     curr_out_bit_vec(0) <= curr_out_bit;
- end process;
- 
- process(i_clk, cbit_rst) begin
-    if cbit_rst = '1' then
-        cbit <= "111";
-    elsif rising_edge(i_clk) and cbit_load = '1' then
-        cbit <= cbit - 1;
-    end if;
  end process;
  
  process(outbuff_mux) begin
@@ -138,20 +135,20 @@ cbit_end <= '1' when cbit = 0 else '0';
     end if;
  end process;
  
- process(i_clk) begin
+ process(i_clk, curr_rst) begin
+    if curr_rst = '1' then
+       curr_pos <= (others => '0');
+    elsif curr_load = '1' then
+       curr_pos <= std_logic_vector(unsigned(curr_pos) + 1); 
+    end if;
+ 
+ end process;
+ 
+ process(i_clk, nbytes_load) begin
     if nbytes_load = '1' then
        nbytes <= unsigned(i_data);
     end if;
  end process;
- 
- process(i_clk, cnbyte_rst) begin
-    if cnbyte_rst = '1' then
-       currbyte <= (others => '0');
-    elsif cnbyte_load = '1' then
-       currbyte <= currbyte + 1;
-    end if;
- end process;
- 
  
 o_outbyte <= outbuff;
 

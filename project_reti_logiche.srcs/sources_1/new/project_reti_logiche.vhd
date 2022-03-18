@@ -19,26 +19,24 @@ end project_reti_logiche;
 architecture Behavioral of project_reti_logiche is
 
 component datapath is
-        Port ( i_data : in STD_LOGIC_VECTOR (7 downto 0);
+    Port ( i_data : in STD_LOGIC_VECTOR (7 downto 0);
            i_clk : in STD_LOGIC;
            o_outbyte : out STD_LOGIC_VECTOR(7 downto 0);
            cbyte_load : in STD_LOGIC;
            sm_ena : in STD_LOGIC;
            sm_rst : in STD_LOGIC;
            sm_w_sel : in STD_LOGIC;
-           cbit_load : in STD_LOGIC;
-           cbit_rst : in STD_LOGIC;
+           curr_load : in STD_LOGIC;
+           curr_rst : in STD_LOGIC;
            sr_byte_load : in STD_LOGIC;
            sr_ena : in STD_LOGIC;
            nbytes_load : in STD_LOGIC;
            outbuff_rst : in std_logic;
            outbuff_load : in std_logic;
-           cnbyte_load : in STD_LOGIC;
-           cnbyte_rst : in STD_LOGIC;
            seq_end : out STD_LOGIC;
            cbit_end : out std_logic;
-           o_addr : out STD_LOGIC_VECTOR(15 downto 0);
-           writesel : in std_logic);
+           writesel : in std_logic;
+           o_addr : out STD_LOGIC_VECTOR(15 downto 0));
  end component;
 
 type comp_state is (S0, S1, S2, S3, S4, S5, S6);
@@ -83,12 +81,10 @@ DP : datapath port map(
            nbytes_load,
            outbuff_rst,
            outbuff_load,
-           cnbyte_load,
-           cnbyte_rst,
            seq_end,
            cbit_end,
-           o_address,
-           writesel);
+           writesel,
+           o_address);
 
 -- gestisce stato corrente in modo sincronizzato
 process(i_clk, i_rst) begin
