@@ -26,8 +26,7 @@ component datapath is
            sm_ena : in STD_LOGIC;
            sm_rst : in STD_LOGIC;
            sm_w_sel : in STD_LOGIC;
-           curr_load : in STD_LOGIC;
-           curr_rst : in STD_LOGIC;
+           curr_mux : in STD_LOGIC_VECTOR(1 downto 0);
            sr_byte_load : in STD_LOGIC;
            sr_ena : in STD_LOGIC;
            nbytes_load : in STD_LOGIC;
@@ -39,16 +38,15 @@ component datapath is
            o_addr : out STD_LOGIC_VECTOR(15 downto 0));
  end component;
 
-type comp_state is (S0, S1, S2, S3, S4, S5, S6);
+type comp_state is (S0, S1, S2, S3, S4, S5, S6, S7);
 
 signal curr_state, next_state : comp_state;
-signal curr_addr, next_addr : std_logic_vector(15 downto 0);
 
 signal cbyte_load : std_logic; -- abilita caricamento (incremento) del byte corrente
 signal sm_ena : std_logic; -- abilita la macchina a stati
 signal sm_rst : std_logic; -- resetta la macchina a stati
 signal sm_w_sel : std_logic; -- seleziona se scribere bit 0 o 1 dalla macchina a stati bel buff di output
-signal cbit_load : std_logic; -- inutile
+signal curr_mux : std_logic_vector(1 downto 0); -- inutile
 signal cbit_rst : std_logic; -- resetta il bit corrente all'interno del byte a 7
 signal sr_byte_load : std_logic; -- inserisce nuovo byte nello shift register
 signal sr_ena : std_logic; -- abilita lo shift register
@@ -74,8 +72,7 @@ DP : datapath port map(
            sm_ena,
            sm_rst,
            sm_w_sel,
-           cbit_load,
-           cbit_rst,
+           curr_mux,
            sr_byte_load,
            sr_ena,
            nbytes_load,
@@ -97,7 +94,7 @@ end if;
 
 end process;
 
-process(curr_state, curr_addr, cbit_end, i_start) begin
+process(curr_state, cbit_end, i_start) begin
 
 case curr_state is
     
@@ -116,11 +113,13 @@ case curr_state is
     when S5 =>
         next_state <= S6;
     when S6 =>
+        next_state <= S7;
+    when S7 =>
         if cbit_end = '1' then
-            next_state <= S2;
+            next_state <= S3;
         else
             next_state <= S4;
-        end if;
+        end if; 
 end case;
 end process;
 
@@ -130,49 +129,42 @@ process(curr_state) begin
     sm_ena <= '0';
     sm_rst <= '0';
     sm_w_sel <= '0';
-    cbit_load <= '0';
-    cbit_rst <= '0';
+    curr_mux <= "00";
     sr_byte_load <= '0';
     sr_ena <= '0';
     nbytes_load <= '0';
     outbuff_rst <= '0';
     outbuff_load <= '0';
-    cnbyte_load <= '0';
-    cnbyte_rst <= '0';
-    seq_end <= '0';
-    cbit_end <= '0';
+    nbytes_load <= '0';
     writesel <= '0';
 
 
     case curr_state is
         when S0 =>
         when S1 =>
-           nbytes_load <= '1';
-           cnbyte_load <= '1';
+           sm_rst <= '1';
+           curr_mux <= "11";
            outbuff_rst <= '1';
            outbuff_load <= '1';
-           cnbyte_rst <= '1';
-           sm_rst <= '1';
         when S2 =>
-           sr_ena <= '1';
-           sr_byte_load <= '1';
-           cbit_rst <= '1';
-           cbit_load <= '1';
-           sm_ena <= '1';
+           curr_mux <= "10";
+           nbytes_load <= '1';
         when S3 =>
-           sr_ena <= '1';
-           sm_ena <= '0';
            sr_byte_load <= '1';
         when S4 =>
            sr_ena <= '1';
+           sm_ena <= '1';
+           curr_mux <= "00";
         when S5 =>
            sm_w_sel <= '0';
-           outbuff_load <= '1'; 
+           outbuff_load <= '1';
+           curr_mux <= "00";
         when S6 =>
            sm_w_sel <= '1';
            outbuff_load <= '1';
-           cbit_load <= '1';
-    
+           curr_mux <= "00";
+        when S7 =>
+           curr_mux <= "01";    
     end case;
 
 end process;

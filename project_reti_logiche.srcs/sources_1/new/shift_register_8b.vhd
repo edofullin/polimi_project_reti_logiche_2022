@@ -18,19 +18,19 @@ begin
 
 process(i_clk) begin
 
-if falling_edge(i_clk) and i_ena = '1' then
+if rising_edge(i_clk) then
 
-if i_load = '1' then
-
-    r_mem <= i_data;
-
-else    
+    if i_load = '1' then
     
-    o_srout <= r_mem(7); 
-    r_mem <= std_logic_vector(shift_left(unsigned(r_mem), 1));
+        r_mem <= i_data;
     
-   
-end if;
+    elsif i_ena = '1' then
+        
+        o_srout <= r_mem(7); 
+        r_mem <= std_logic_vector(shift_left(unsigned(r_mem), 1));
+        
+       
+    end if;
 
 end if;
 
