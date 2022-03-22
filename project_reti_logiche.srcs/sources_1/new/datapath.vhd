@@ -67,7 +67,16 @@ component shift_register_8b is
            o_srout : out std_logic);
 end component;
 
+component serializer_register_8b is
+    Port ( i_clk : in STD_LOGIC;
+           i_in : in STD_LOGIC_VECTOR (7 downto 0);
+           i_load : in std_logic;
+           i_sel : in STD_LOGIC_VECTOR (2 downto 0);
+           o_out : out STD_LOGIC);
+end component;
+
 signal sm_input: std_logic := '0';
+signal sm_input_msr: std_logic := '0';
 signal sm_output : std_logic_vector(1 downto 0);
 
 signal curr_out_bit : std_logic;
@@ -89,7 +98,7 @@ SM : state_machine port map (
     sm_ena,
     sm_rst,
     i_clk,
-    sm_input,
+    sm_input_msr,
     sm_output);
     
 SR : shift_register_8b port map(
@@ -98,10 +107,17 @@ SR : shift_register_8b port map(
     sr_ena,
     i_clk,
     sm_input);
+    
+MSR: serializer_register_8b port map(
+    i_clk,
+    i_data,
+    sr_byte_load,
+    curr_pos(2 downto 0),
+    sm_input_msr);
 
 with sm_w_sel select
-    curr_out_bit <= sm_output(0) when '0',
-                    sm_output(1) when '1',
+    curr_out_bit <= sm_output(1) when '0',
+                    sm_output(0) when '1',
                     'X' when others;
 with sm_w_sel select
      out_pos <= std_logic_vector(shift_left(unsigned(curr_pos), 1)) when '0',
@@ -125,12 +141,10 @@ with curr_mux select
                 curr_pos when others;
 
 outbuff_full <= '1' when out_pos(2 downto 0) = "111" else '0';
-seq_end <= '1' when nbytes - unsigned(curr_pos(10 downto 3)) = 1 else '0';
+seq_end <= '1' when unsigned(curr_pos(10 downto 3)) > nbytes else '0';
 cbit_end <= '1' when curr_pos(2 downto 0) = "111" else '0';
                    
- process(curr_out_bit_vec, curr_pos) begin
-    currbit_shift <= std_logic_vector(shift_left(unsigned(curr_out_bit_vec), 8 - to_integer(unsigned(out_pos(2 downto 0)))));
- end process;
+currbit_shift <= std_logic_vector(shift_left(unsigned(curr_out_bit_vec), 7 - to_integer(unsigned(out_pos(2 downto 0)))));
  
  process(curr_out_bit) begin
     curr_out_bit_vec(7 downto 1) <= "0000000";

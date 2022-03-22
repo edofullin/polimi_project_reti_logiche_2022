@@ -54,6 +54,6 @@ begin
 
 end process;
 
-o_out <= curr_byte(to_integer(unsigned(i_sel)));
+o_out <= curr_byte(to_integer(7 - unsigned(i_sel)));
 
 end Behavioral;

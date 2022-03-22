@@ -10,15 +10,15 @@
       </db_ref>
    </db_ref_list>
    <zoom_setting>
-      <ZoomStartTime time="1,863.240 ns"></ZoomStartTime>
-      <ZoomEndTime time="3,093.241 ns"></ZoomEndTime>
-      <Cursor1Time time="2,550.000 ns"></Cursor1Time>
+      <ZoomStartTime time="9,703.050 ns"></ZoomStartTime>
+      <ZoomEndTime time="10,949.051 ns"></ZoomEndTime>
+      <Cursor1Time time="10,250.000 ns"></Cursor1Time>
    </zoom_setting>
    <column_width_setting>
       <NameColumnWidth column_width="276"></NameColumnWidth>
-      <ValueColumnWidth column_width="108"></ValueColumnWidth>
+      <ValueColumnWidth column_width="100"></ValueColumnWidth>
    </column_width_setting>
-   <WVObjectSize size="24" />
+   <WVObjectSize size="27" />
    <wvobject type="logic" fp_name="/project_tb/UUT/i_clk">
       <obj_property name="ElementShortName">i_clk</obj_property>
       <obj_property name="ObjectShortName">i_clk</obj_property>
@@ -26,6 +26,30 @@
    <wvobject type="logic" fp_name="/project_tb/UUT/i_start">
       <obj_property name="ElementShortName">i_start</obj_property>
       <obj_property name="ObjectShortName">i_start</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/project_tb/UUT/DP/sm_input_msr">
+      <obj_property name="ElementShortName">sm_input_msr</obj_property>
+      <obj_property name="ObjectShortName">sm_input_msr</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/project_tb/UUT/seq_end">
+      <obj_property name="ElementShortName">seq_end</obj_property>
+      <obj_property name="ObjectShortName">seq_end</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/project_tb/UUT/cbit_end">
+      <obj_property name="ElementShortName">cbit_end</obj_property>
+      <obj_property name="ObjectShortName">cbit_end</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/project_tb/UUT/DP/MSR/curr_byte">
+      <obj_property name="ElementShortName">curr_byte[7:0]</obj_property>
+      <obj_property name="ObjectShortName">curr_byte[7:0]</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/project_tb/UUT/DP/MSR/o_out">
+      <obj_property name="ElementShortName">o_out</obj_property>
+      <obj_property name="ObjectShortName">o_out</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/project_tb/UUT/DP/MSR/i_load">
+      <obj_property name="ElementShortName">i_load</obj_property>
+      <obj_property name="ObjectShortName">i_load</obj_property>
    </wvobject>
    <wvobject type="array" fp_name="/project_tb/UUT/o_address">
       <obj_property name="ElementShortName">o_address[15:0]</obj_property>
@@ -41,80 +65,68 @@
       <obj_property name="ObjectShortName">out_pos[10:0]</obj_property>
       <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
    </wvobject>
-   <wvobject type="array" fp_name="/project_tb/UUT/DP/SR/r_mem">
-      <obj_property name="ElementShortName">r_mem[7:0]</obj_property>
-      <obj_property name="ObjectShortName">r_mem[7:0]</obj_property>
+   <wvobject type="logic" fp_name="/project_tb/UUT/DP/outbuff_load">
+      <obj_property name="ElementShortName">outbuff_load</obj_property>
+      <obj_property name="ObjectShortName">outbuff_load</obj_property>
    </wvobject>
-   <wvobject type="other" fp_name="/project_tb/UUT/curr_state">
-      <obj_property name="ElementShortName">curr_state</obj_property>
-      <obj_property name="ObjectShortName">curr_state</obj_property>
+   <wvobject type="array" fp_name="/project_tb/UUT/DP/outbuff_mux">
+      <obj_property name="ElementShortName">outbuff_mux[7:0]</obj_property>
+      <obj_property name="ObjectShortName">outbuff_mux[7:0]</obj_property>
    </wvobject>
-   <wvobject type="logic" fp_name="/project_tb/mem_we">
-      <obj_property name="ElementShortName">mem_we</obj_property>
-      <obj_property name="ObjectShortName">mem_we</obj_property>
-   </wvobject>
-   <wvobject type="logic" fp_name="/project_tb/UUT/outbuff_full">
-      <obj_property name="ElementShortName">outbuff_full</obj_property>
-      <obj_property name="ObjectShortName">outbuff_full</obj_property>
+   <wvobject type="logic" fp_name="/project_tb/UUT/outbuff_load">
+      <obj_property name="ElementShortName">outbuff_load</obj_property>
+      <obj_property name="ObjectShortName">outbuff_load</obj_property>
    </wvobject>
    <wvobject type="array" fp_name="/project_tb/UUT/DP/outbuff">
       <obj_property name="ElementShortName">outbuff[7:0]</obj_property>
       <obj_property name="ObjectShortName">outbuff[7:0]</obj_property>
    </wvobject>
-   <wvobject type="array" fp_name="/project_tb/UUT/i_data">
-      <obj_property name="ElementShortName">i_data[7:0]</obj_property>
-      <obj_property name="ObjectShortName">i_data[7:0]</obj_property>
+   <wvobject type="logic" fp_name="/project_tb/UUT/DP/curr_out_bit">
+      <obj_property name="ElementShortName">curr_out_bit</obj_property>
+      <obj_property name="ObjectShortName">curr_out_bit</obj_property>
    </wvobject>
-   <wvobject type="array" fp_name="/project_tb/UUT/DP/nbytes">
-      <obj_property name="ElementShortName">nbytes[7:0]</obj_property>
-      <obj_property name="ObjectShortName">nbytes[7:0]</obj_property>
+   <wvobject type="other" fp_name="/project_tb/UUT/curr_state">
+      <obj_property name="ElementShortName">curr_state</obj_property>
+      <obj_property name="ObjectShortName">curr_state</obj_property>
    </wvobject>
-   <wvobject type="logic" fp_name="/project_tb/UUT/DP/SR/i_load">
-      <obj_property name="ElementShortName">i_load</obj_property>
-      <obj_property name="ObjectShortName">i_load</obj_property>
+   <wvobject type="logic" fp_name="/project_tb/UUT/DP/SM/i_in">
+      <obj_property name="ElementShortName">i_in</obj_property>
+      <obj_property name="ObjectShortName">i_in</obj_property>
    </wvobject>
-   <wvobject type="logic" fp_name="/project_tb/UUT/DP/SR/o_srout">
-      <obj_property name="ElementShortName">o_srout</obj_property>
-      <obj_property name="ObjectShortName">o_srout</obj_property>
+   <wvobject type="other" fp_name="/project_tb/UUT/DP/SM/curr_state">
+      <obj_property name="ElementShortName">curr_state</obj_property>
+      <obj_property name="ObjectShortName">curr_state</obj_property>
    </wvobject>
-   <wvobject type="logic" fp_name="/project_tb/UUT/DP/SR/i_ena">
-      <obj_property name="ElementShortName">i_ena</obj_property>
-      <obj_property name="ObjectShortName">i_ena</obj_property>
+   <wvobject type="other" fp_name="/project_tb/UUT/DP/SM/next_state">
+      <obj_property name="ElementShortName">next_state</obj_property>
+      <obj_property name="ObjectShortName">next_state</obj_property>
    </wvobject>
    <wvobject type="array" fp_name="/project_tb/UUT/DP/SM/o_out">
       <obj_property name="ElementShortName">o_out[1:0]</obj_property>
       <obj_property name="ObjectShortName">o_out[1:0]</obj_property>
    </wvobject>
-   <wvobject type="logic" fp_name="/project_tb/UUT/DP/writesel">
-      <obj_property name="ElementShortName">writesel</obj_property>
-      <obj_property name="ObjectShortName">writesel</obj_property>
+   <wvobject type="array" fp_name="/project_tb/UUT/DP/curr_out_bit_vec">
+      <obj_property name="ElementShortName">curr_out_bit_vec[7:0]</obj_property>
+      <obj_property name="ObjectShortName">curr_out_bit_vec[7:0]</obj_property>
    </wvobject>
-   <wvobject type="array" fp_name="/project_tb/UUT/DP/o_outbyte">
-      <obj_property name="ElementShortName">o_outbyte[7:0]</obj_property>
-      <obj_property name="ObjectShortName">o_outbyte[7:0]</obj_property>
+   <wvobject type="array" fp_name="/project_tb/UUT/DP/out_pos">
+      <obj_property name="ElementShortName">out_pos[10:0]</obj_property>
+      <obj_property name="ObjectShortName">out_pos[10:0]</obj_property>
    </wvobject>
    <wvobject type="array" fp_name="/project_tb/UUT/DP/currbit_shift">
       <obj_property name="ElementShortName">currbit_shift[7:0]</obj_property>
       <obj_property name="ObjectShortName">currbit_shift[7:0]</obj_property>
    </wvobject>
-   <wvobject type="logic" fp_name="/project_tb/UUT/DP/curr_out_bit">
-      <obj_property name="ElementShortName">curr_out_bit</obj_property>
-      <obj_property name="ObjectShortName">curr_out_bit</obj_property>
+   <wvobject type="logic" fp_name="/project_tb/UUT/DP/sr_byte_load">
+      <obj_property name="ElementShortName">sr_byte_load</obj_property>
+      <obj_property name="ObjectShortName">sr_byte_load</obj_property>
    </wvobject>
-   <wvobject type="logic" fp_name="/project_tb/tb_start">
-      <obj_property name="ElementShortName">tb_start</obj_property>
-      <obj_property name="ObjectShortName">tb_start</obj_property>
+   <wvobject type="logic" fp_name="/project_tb/UUT/outbuff_full">
+      <obj_property name="ElementShortName">outbuff_full</obj_property>
+      <obj_property name="ObjectShortName">outbuff_full</obj_property>
    </wvobject>
-   <wvobject type="array" fp_name="/project_tb/UUT/DP/curr_mux">
-      <obj_property name="ElementShortName">curr_mux[1:0]</obj_property>
-      <obj_property name="ObjectShortName">curr_mux[1:0]</obj_property>
-   </wvobject>
-   <wvobject type="logic" fp_name="/project_tb/UUT/DP/sm_input">
-      <obj_property name="ElementShortName">sm_input</obj_property>
-      <obj_property name="ObjectShortName">sm_input</obj_property>
-   </wvobject>
-   <wvobject type="logic" fp_name="/project_tb/UUT/cbit_end">
-      <obj_property name="ElementShortName">cbit_end</obj_property>
-      <obj_property name="ObjectShortName">cbit_end</obj_property>
+   <wvobject type="logic" fp_name="/project_tb/UUT/DP/SM/i_ena">
+      <obj_property name="ElementShortName">i_ena</obj_property>
+      <obj_property name="ObjectShortName">i_ena</obj_property>
    </wvobject>
 </wave_config>

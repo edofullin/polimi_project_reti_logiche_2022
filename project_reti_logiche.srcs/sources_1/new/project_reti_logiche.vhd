@@ -39,7 +39,7 @@ component datapath is
            o_addr : out STD_LOGIC_VECTOR(15 downto 0));
  end component;
 
-type comp_state is (S0, S1, S2, S3, S4, S5, S6, S7, S8, S9, S_STALL);
+type comp_state is (S0, S1, S2, S3, S4, S5, S6, S7, S8, S9, S_S1, S_S2);
 
 signal curr_state, next_state : comp_state;
 
@@ -107,10 +107,12 @@ case curr_state is
     when S1 =>
         next_state <= S2;
     when S2 =>
-         next_state <= S_STALL;
-    when S_STALL =>
+         next_state <= S_S1;
+    when S_S1 =>
         next_state <= S3;
     when S3 =>
+        next_state <= S_S2;
+    when S_S2 =>
         next_state <= S4;
     when S4 =>
         next_state <= S5;
@@ -124,9 +126,9 @@ case curr_state is
         end if;
     when S7 =>
         if cbit_end = '1' then  
-           next_state <= S_STALL;
+           next_state <= S_S1;
         else
-           next_state <= S4;
+           next_state <= S_S2;
         end if;
     when S8 =>
         next_state <= S9;
@@ -161,8 +163,10 @@ process(curr_state) begin
         when S2 =>
            curr_mux <= "10";
            nbytes_load <= '1';
-        when S_STALL =>
+        when S_S1 =>
         when S3 =>
+           sr_byte_load <= '1';
+        when S_S2 =>
            sr_byte_load <= '1';
         when S4 =>
            sr_ena <= '1';

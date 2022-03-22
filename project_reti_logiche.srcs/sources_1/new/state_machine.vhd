@@ -78,11 +78,11 @@ case curr_state is
         end if;
     when S3 =>
         if i_in = '1' then
+           next_state <= S3;
+           next_out <= "11";
+        else
            next_state <= S1;
            next_out <= "10";
-        else
-           next_state <= S3;
-           next_out <= "01";
         end if;       
 end case;
 
