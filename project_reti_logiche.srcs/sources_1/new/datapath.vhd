@@ -44,6 +44,7 @@ entity datapath is
            outbuff_load : in std_logic;
            seq_end : out STD_LOGIC;
            cbit_end : out std_logic;
+           outbuff_full : out std_logic;
            writesel : in std_logic;
            o_addr : out STD_LOGIC_VECTOR(15 downto 0));
 end datapath;
@@ -113,9 +114,9 @@ with outbuff_rst select
                    (others => 'X') when others;
 
 with writesel select
-    o_addr <= X"00" & std_logic_vector(unsigned(curr_pos(10 downto 3)) + 1000) when '1',
-              X"00" & std_logic_vector(unsigned(curr_pos(10 downto 3)) + 1) when '0',
-              (others => 'X') when others;  
+    o_addr <= std_logic_vector(unsigned(X"00" & out_pos(10 downto 3)) + 1000) when '1',
+              std_logic_vector(unsigned(X"00" & curr_pos(10 downto 3))) when '0',
+              (others => '0') when others;  
 
 with curr_mux select
     cpos_mux <= (others => '0') when "11",
@@ -123,7 +124,7 @@ with curr_mux select
                 std_logic_vector(unsigned(curr_pos) + 8) when "10",
                 curr_pos when others;
 
-
+outbuff_full <= '1' when out_pos(2 downto 0) = "111" else '0';
 seq_end <= '1' when nbytes - unsigned(curr_pos(10 downto 3)) = 1 else '0';
 cbit_end <= '1' when curr_pos(2 downto 0) = "111" else '0';
                    

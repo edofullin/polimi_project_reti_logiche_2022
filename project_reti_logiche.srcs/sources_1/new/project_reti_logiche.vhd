@@ -34,11 +34,12 @@ component datapath is
            outbuff_load : in std_logic;
            seq_end : out STD_LOGIC;
            cbit_end : out std_logic;
+           outbuff_full : out std_logic;
            writesel : in std_logic;
            o_addr : out STD_LOGIC_VECTOR(15 downto 0));
  end component;
 
-type comp_state is (S0, S1, S2, S3, S4, S5, S6, S7);
+type comp_state is (S0, S1, S2, S3, S4, S5, S6, S7, S8, S9, S_STALL);
 
 signal curr_state, next_state : comp_state;
 
@@ -60,7 +61,7 @@ signal seq_end : std_logic; -- viene alzato se la sequenza è terminata
 signal cbit_end : std_logic; -- viene alzato se il byte corrente è processato interamente
 signal writesel : std_logic; -- attivo in scrittura
 
-
+signal outbuff_full : std_logic;
 
 begin
 
@@ -80,6 +81,7 @@ DP : datapath port map(
            outbuff_load,
            seq_end,
            cbit_end,
+           outbuff_full,
            writesel,
            o_address);
 
@@ -94,7 +96,7 @@ end if;
 
 end process;
 
-process(curr_state, cbit_end, i_start) begin
+process(curr_state, cbit_end, i_start, outbuff_full) begin
 
 case curr_state is
     
@@ -105,7 +107,9 @@ case curr_state is
     when S1 =>
         next_state <= S2;
     when S2 =>
-         next_state <= S3;
+         next_state <= S_STALL;
+    when S_STALL =>
+        next_state <= S3;
     when S3 =>
         next_state <= S4;
     when S4 =>
@@ -113,13 +117,21 @@ case curr_state is
     when S5 =>
         next_state <= S6;
     when S6 =>
-        next_state <= S7;
-    when S7 =>
-        if cbit_end = '1' then
-            next_state <= S3;
+        if outbuff_full = '1' then
+            next_state <= S8;
         else
-            next_state <= S4;
-        end if; 
+            next_state <= S7;
+        end if;
+    when S7 =>
+        if cbit_end = '1' then  
+           next_state <= S_STALL;
+        else
+           next_state <= S4;
+        end if;
+    when S8 =>
+        next_state <= S9;
+    when S9 =>
+        next_state <= S7;
 end case;
 end process;
 
@@ -149,6 +161,7 @@ process(curr_state) begin
         when S2 =>
            curr_mux <= "10";
            nbytes_load <= '1';
+        when S_STALL =>
         when S3 =>
            sr_byte_load <= '1';
         when S4 =>
@@ -164,7 +177,15 @@ process(curr_state) begin
            outbuff_load <= '1';
            curr_mux <= "00";
         when S7 =>
-           curr_mux <= "01";    
+           sm_w_sel <= '1';
+           curr_mux <= "01";
+        when S8 =>
+           sm_w_sel <= '1';
+           writesel <= '1';
+        when S9 =>
+           sm_w_sel <= '1';
+           outbuff_rst <= '1';
+           outbuff_load <= '1';
     end case;
 
 end process;
