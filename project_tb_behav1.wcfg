@@ -10,15 +10,15 @@
       </db_ref>
    </db_ref_list>
    <zoom_setting>
-      <ZoomStartTime time="9,703.050 ns"></ZoomStartTime>
-      <ZoomEndTime time="10,949.051 ns"></ZoomEndTime>
-      <Cursor1Time time="10,250.000 ns"></Cursor1Time>
+      <ZoomStartTime time="8,583.000 ns"></ZoomStartTime>
+      <ZoomEndTime time="8,685.401 ns"></ZoomEndTime>
+      <Cursor1Time time="8,687.500 ns"></Cursor1Time>
    </zoom_setting>
    <column_width_setting>
       <NameColumnWidth column_width="276"></NameColumnWidth>
-      <ValueColumnWidth column_width="100"></ValueColumnWidth>
+      <ValueColumnWidth column_width="96"></ValueColumnWidth>
    </column_width_setting>
-   <WVObjectSize size="27" />
+   <WVObjectSize size="29" />
    <wvobject type="logic" fp_name="/project_tb/UUT/i_clk">
       <obj_property name="ElementShortName">i_clk</obj_property>
       <obj_property name="ObjectShortName">i_clk</obj_property>
@@ -54,6 +54,14 @@
    <wvobject type="array" fp_name="/project_tb/UUT/o_address">
       <obj_property name="ElementShortName">o_address[15:0]</obj_property>
       <obj_property name="ObjectShortName">o_address[15:0]</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/project_tb/UUT/DP/nbytes">
+      <obj_property name="ElementShortName">nbytes[7:0]</obj_property>
+      <obj_property name="ObjectShortName">nbytes[7:0]</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/project_tb/UUT/DP/i_data">
+      <obj_property name="ElementShortName">i_data[7:0]</obj_property>
+      <obj_property name="ObjectShortName">i_data[7:0]</obj_property>
    </wvobject>
    <wvobject type="array" fp_name="/project_tb/UUT/DP/curr_pos">
       <obj_property name="ElementShortName">curr_pos[10:0]</obj_property>

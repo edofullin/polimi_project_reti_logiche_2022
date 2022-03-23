@@ -39,9 +39,9 @@ component datapath is
            o_addr : out STD_LOGIC_VECTOR(15 downto 0));
  end component;
 
-type comp_state is (S0, S1, S2, S3, S4, S5, S6, S7, S8, S9, S_S1, S_S2);
+type comp_state is (S0, S1, S2, S3, S4, S5, S6, S7, S8, S9, S_S1, S_S2, S_INIT, S_DONE);
 
-signal curr_state, next_state : comp_state;
+signal curr_state, next_state : comp_state := S0;
 
 signal cbyte_load : std_logic; -- abilita caricamento (incremento) del byte corrente
 signal sm_ena : std_logic; -- abilita la macchina a stati
@@ -96,10 +96,15 @@ end if;
 
 end process;
 
-process(curr_state, cbit_end, i_start, outbuff_full) begin
+process(curr_state, cbit_end, i_start, outbuff_full, i_rst) begin
+
+next_state <= curr_state;
 
 case curr_state is
-    
+    when S_INIT =>
+        if i_rst = '1' then
+           next_state <= S0;
+        end if;
     when S0 =>
         if i_start = '1' then
             next_state <= S1;
@@ -109,9 +114,17 @@ case curr_state is
     when S2 =>
          next_state <= S_S1;
     when S_S1 =>
-        next_state <= S3;
+        if seq_end = '1' then
+           next_state <= S_DONE;
+        else
+           next_state <= S3;
+        end if;
     when S3 =>
-        next_state <= S_S2;
+        if seq_end = '1' then
+           next_state <= S_DONE;
+        else
+           next_state <= S_S2;
+        end if;
     when S_S2 =>
         next_state <= S4;
     when S4 =>
@@ -134,6 +147,10 @@ case curr_state is
         next_state <= S9;
     when S9 =>
         next_state <= S7;
+    when S_DONE =>
+        if i_start = '0' then
+           next_state <= S0;
+        end if;
 end case;
 end process;
 
@@ -151,6 +168,7 @@ process(curr_state) begin
     outbuff_load <= '0';
     nbytes_load <= '0';
     writesel <= '0';
+    o_done <= '0';
 
 
     case curr_state is
@@ -190,6 +208,10 @@ process(curr_state) begin
            sm_w_sel <= '1';
            outbuff_rst <= '1';
            outbuff_load <= '1';
+        when S_DONE =>
+            o_done <= '1';
+            curr_mux <= "11";
+        when S_INIT =>
     end case;
 
 end process;

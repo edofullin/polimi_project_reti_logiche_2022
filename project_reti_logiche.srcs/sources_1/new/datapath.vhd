@@ -130,7 +130,7 @@ with outbuff_rst select
                    (others => 'X') when others;
 
 with writesel select
-    o_addr <= std_logic_vector(unsigned(X"00" & out_pos(10 downto 3)) + 1000) when '1',
+    o_addr <= std_logic_vector(unsigned(X"00" & out_pos(10 downto 3)) + 998) when '1',
               std_logic_vector(unsigned(X"00" & curr_pos(10 downto 3))) when '0',
               (others => '0') when others;  
 

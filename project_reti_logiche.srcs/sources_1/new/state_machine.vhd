@@ -50,7 +50,7 @@ begin
 
 process(curr_state, i_in)
 begin
-
+next_state <= curr_state;
 case curr_state is
     when S0 =>
         if i_in = '1' then
@@ -69,7 +69,7 @@ case curr_state is
            next_out <= "11";
         end if;
     when S2 =>
-        if i_in = '1' then
+       if i_in = '1' then
            next_state <= S3;
            next_out <= "10";
         else
@@ -79,7 +79,7 @@ case curr_state is
     when S3 =>
         if i_in = '1' then
            next_state <= S3;
-           next_out <= "11";
+           next_out <= "01";
         else
            next_state <= S1;
            next_out <= "10";
@@ -91,15 +91,13 @@ end process;
 process(i_clk, i_ena, i_rst)
 begin
 
-if rising_edge(i_clk) and i_ena = '1' then
+if i_rst = '1' then
+   curr_state <= S0;
+   curr_out <= "00"; 
+elsif rising_edge(i_clk) and i_ena = '1' then
 
-    if i_rst = '1' then
-       curr_state <= S0;
-       curr_out <= "00";
-    else
-        curr_state <= next_state;
-        curr_out <= next_out;
-    end if;
+   curr_state <= next_state;
+   curr_out <= next_out;
 
 end if;
 
