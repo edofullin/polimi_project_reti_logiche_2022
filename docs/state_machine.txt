@@ -1,0 +1,94 @@
+S_INIT Stato Inziale
+
+    if i_rst goto S0
+
+S0 Stato Inizio nuova Sequenza
+
+    if i_start goto S1
+
+S1 Resetta tutto
+
+    sm_rst 1
+    curr_mux 11 (reset)
+    outfuff_rst 1
+    outbuff_load 1
+
+    goto S2
+
+S2 Leggi nbytes
+
+    curr_mux 10 (next byte)
+    nbytes_load 1
+
+    goto S_S1
+
+S_S1 Stallo in attesa di nbytes
+
+    nbytes_load 1
+
+    goto S3
+
+S3 Leggi byte corrente
+
+    sr_byte_load 1
+
+    if seq_end goto S_DONE else S_S2
+
+S_S2 Stallo in attesa del byte corrente
+
+    sr_byte_load 1
+
+    goto S5
+
+S4 Calcola output per bit corrente SM
+
+    sr_ena 1
+    sm_ena 1
+    curr_mux 00 (nop)
+
+    goto S5
+
+S5 Scrivi bit 0 in outbuff
+
+    outbuff_load 1
+    sm_w_sel 0
+    curr_mux 00 (nop)
+
+    goto S6
+
+S6 Scrivi bit 1 in outbuff
+
+    sm_w_sel 1
+    outbuff_load 1
+    curr_mux 00 (nop)
+
+    if outbuff_full goto S8 else S7
+
+S7 Bit finished processing
+
+    curr_mux 01 (next bit)
+
+    if cbit_end goto S_S1 else S_S2
+
+S8 Write current outbuff to memory
+
+    sm_w_sel 1 (useless)
+    writesel 1
+
+    goto S9
+
+S9 Reset outbuff
+
+    sm_w_sel 1
+    outbuff_load 1
+    outbuff_rst 1
+
+    goto S7
+
+S_DONE Sequence ended waiting new Sequence
+
+    o_done 1
+    curr_mux 11 (reset)
+
+    if i_start goto S0 else S_DONE
+
