@@ -90,7 +90,9 @@ signal nbytes : unsigned(7 downto 0);
 signal curr_pos : std_logic_vector(10 downto 0); -- 3 bit for current bit (LSB) and 8 for current byte (MSB)
 signal cpos_mux : std_logic_vector(10 downto 0);
 
-signal out_pos : std_logic_vector(10 downto 0);
+signal curr_pos_overflow : std_logic := '0';
+
+signal out_pos : std_logic_vector(15 downto 0);
 
 begin
 
@@ -120,8 +122,8 @@ with sm_w_sel select
                     sm_output(0) when '1',
                     'X' when others;
 with sm_w_sel select
-     out_pos <= std_logic_vector(shift_left(unsigned(curr_pos), 1)) when '0',
-                std_logic_vector(shift_left(unsigned(curr_pos), 1) + 1) when '1',
+     out_pos <= std_logic_vector(shift_left(unsigned("00000" & curr_pos), 1)) when '0',
+                std_logic_vector(shift_left(unsigned("00000" & curr_pos), 1) + 1) when '1',
                 (others => 'X') when others;
 
 with outbuff_rst select
@@ -130,7 +132,7 @@ with outbuff_rst select
                    (others => 'X') when others;
 
 with writesel select
-    o_addr <= std_logic_vector(unsigned(X"00" & out_pos(10 downto 3)) + 998) when '1',
+    o_addr <= std_logic_vector(unsigned("000" & out_pos(15 downto 3)) + 998) when '1',
               std_logic_vector(unsigned(X"00" & curr_pos(10 downto 3))) when '0',
               (others => '0') when others;  
 
@@ -141,7 +143,7 @@ with curr_mux select
                 curr_pos when others;
 
 outbuff_full <= '1' when out_pos(2 downto 0) = "111" else '0';
-seq_end <= '1' when unsigned(curr_pos(10 downto 3)) > nbytes else '0';
+seq_end <= '1' when unsigned(curr_pos(10 downto 3)) > nbytes or curr_pos_overflow = '1' else '0';
 cbit_end <= '1' when curr_pos(2 downto 0) = "111" else '0';
                    
 currbit_shift <= std_logic_vector(shift_left(unsigned(curr_out_bit_vec), 7 - to_integer(unsigned(out_pos(2 downto 0)))));
@@ -159,6 +161,11 @@ currbit_shift <= std_logic_vector(shift_left(unsigned(curr_out_bit_vec), 7 - to_
  
  process(i_clk, cpos_mux) begin
  if rising_edge(i_clk) then
+    
+    if curr_pos = "11111111111" and cpos_mux = "00000000000" then
+       curr_pos_overflow <= '1';
+    end if;
+ 
      curr_pos <= cpos_mux;
  end if;
  end process;

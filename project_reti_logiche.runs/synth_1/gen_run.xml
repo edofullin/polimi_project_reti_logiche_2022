@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<GenRun Id="synth_1" LaunchPart="xc7a200tfbg484-1" LaunchTime="1647981562">
+<GenRun Id="synth_1" LaunchPart="xc7a200tfbg484-1" LaunchTime="1648153044">
   <File Type="REPORTS-TCL" Name="project_reti_logiche_reports.tcl"/>
   <File Type="PA-TCL" Name="project_reti_logiche.tcl"/>
   <File Type="RDS-DCP" Name="project_reti_logiche.dcp"/>
