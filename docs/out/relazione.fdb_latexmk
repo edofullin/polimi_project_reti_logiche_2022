@@ -1,0 +1,19 @@
+# Fdb version 3
+["pdflatex"] 1648207659 "/workspaces/polimi_project_reti_logiche_2022/docs/relazione.tex" "out/relazione.pdf" "relazione" 1648207674
+  "/etc/texmf/web2c/texmf.cnf" 1648207176 475 c0e671620eb5563b2130f56340a5fde8 ""
+  "/usr/share/texlive/texmf-dist/fonts/tfm/public/cm/cmr12.tfm" 1136768653 1288 655e228510b4c2a1abe905c368440826 ""
+  "/usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmr12.pfb" 1248133631 32722 d7379af29a190c3f453aba36302ff5a9 ""
+  "/usr/share/texlive/texmf-dist/tex/latex/base/article.cls" 1580683321 20023 e427dd9e17e239bf926ef3aab67fe35e ""
+  "/usr/share/texlive/texmf-dist/tex/latex/base/size12.clo" 1580683321 8447 5c4b8ee712f8e349df2722115bc8c513 ""
+  "/usr/share/texlive/texmf-dist/tex/latex/l3backend/l3backend-pdfmode.def" 1580854751 25404 9d60f463a00d154207ec0048dee27cf0 ""
+  "/usr/share/texlive/texmf-dist/web2c/texmf.cnf" 1581979058 38841 ce3692aa899bb693b90b87eaa5d4d84e ""
+  "/usr/share/texmf/web2c/texmf.cnf" 1581979058 38841 ce3692aa899bb693b90b87eaa5d4d84e ""
+  "/var/lib/texmf/fonts/map/pdftex/updmap/pdftex.map" 1648207185 4338190 ccf23483f29b6bdb7012ae3a472369b6 ""
+  "/var/lib/texmf/web2c/pdftex/pdflatex.fmt" 1648207194 4791332 e182e2c4a6949f7eb68df9f360bdceb5 ""
+  "/workspaces/polimi_project_reti_logiche_2022/docs/relazione.tex" 1648207674 108 2457a27dd433c0f2fa88e2c5015b8f8d ""
+  "out/relazione.aux" 1648207660 8 a94a2480d3289e625eea47cd1b285758 "pdflatex"
+  "relazione.tex" 1648207674 108 2457a27dd433c0f2fa88e2c5015b8f8d ""
+  (generated)
+  "out/relazione.aux"
+  "out/relazione.log"
+  "out/relazione.pdf"
