@@ -1,0 +1,13 @@
+#-----------------------------------------------------------
+# Vivado v2021.2 (64-bit)
+# SW Build 3367213 on Tue Oct 19 02:47:39 MDT 2021
+# IP Build 3369179 on Thu Oct 21 08:25:16 MDT 2021
+# Start of session at: Fri Mar 25 11:00:00 2022
+# Process ID: 16696
+# Current directory: /home/edoardo/Code/polimi_project_reti_logiche_2022/project_reti_logiche.runs/impl_1
+# Command line: vivado -log project_reti_logiche.vdi -applog -product Vivado -messageDb vivado.pb -mode batch -source project_reti_logiche.tcl -notrace
+# Log file: /home/edoardo/Code/polimi_project_reti_logiche_2022/project_reti_logiche.runs/impl_1/project_reti_logiche.vdi
+# Journal file: /home/edoardo/Code/polimi_project_reti_logiche_2022/project_reti_logiche.runs/impl_1/vivado.jou
+# Running On: edoardo-fedora, OS: Linux, CPU Frequency: 800.000 MHz, CPU Physical cores: 4, Host memory: 16713 MB
+#-----------------------------------------------------------
+source project_reti_logiche.tcl -notrace
