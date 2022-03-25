@@ -22,7 +22,7 @@ type ram_type is array (65535 downto 0) of std_logic_vector(7 downto 0);
 
 
 signal RAM: ram_type := (0 => std_logic_vector(to_unsigned(  2  , 8)), 
-                         1 => std_logic_vector(to_unsigned(  163  , 8)), 
+                         1 => std_logic_vector(to_unsigned(  162  , 8)), 
                          2 => std_logic_vector(to_unsigned(  75  , 8)),  
                          others => (others =>'0'));         
 			 -- Expected Output  1000 -> 209                         
