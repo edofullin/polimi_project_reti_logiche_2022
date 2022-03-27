@@ -1,10 +1,10 @@
 -- Copyright 1986-2021 Xilinx, Inc. All Rights Reserved.
 -- --------------------------------------------------------------------------------
 -- Tool Version: Vivado v.2021.2 (lin64) Build 3367213 Tue Oct 19 02:47:39 MDT 2021
--- Date        : Sun Mar 27 14:49:22 2022
+-- Date        : Sun Mar 27 14:48:21 2022
 -- Host        : edoardo-fedora running 64-bit unknown
 -- Command     : write_vhdl -mode funcsim -nolib -force -file
---               /home/edoardo/Code/polimi_project_reti_logiche_2022/project/project_reti_logiche.sim/sim_1/synth/func/xsim/project_tb_func_synth.vhd
+--               /home/edoardo/Code/polimi_project_reti_logiche_2022/project/project_reti_logiche.sim/sim_1/impl/func/xsim/project_tb_func_impl.vhd
 -- Design      : project_reti_logiche
 -- Purpose     : This VHDL netlist is a functional simulation representation of the design and should not be modified or
 --               synthesized. This netlist cannot be used for SDF annotated simulation.
@@ -481,9 +481,7 @@ architecture STRUCTURE of datapath is
   signal seq_end1_carry_i_7_n_0 : STD_LOGIC;
   signal seq_end1_carry_i_8_n_0 : STD_LOGIC;
   signal seq_end1_carry_n_0 : STD_LOGIC;
-  signal seq_end1_carry_n_1 : STD_LOGIC;
-  signal seq_end1_carry_n_2 : STD_LOGIC;
-  signal seq_end1_carry_n_3 : STD_LOGIC;
+  signal NLW_seq_end1_carry_CO_UNCONNECTED : STD_LOGIC_VECTOR ( 2 downto 0 );
   signal NLW_seq_end1_carry_O_UNCONNECTED : STD_LOGIC_VECTOR ( 3 downto 0 );
   attribute SOFT_HLUTNM : string;
   attribute SOFT_HLUTNM of \FSM_onehot_curr_state[11]_i_1\ : label is "soft_lutpair8";
@@ -510,6 +508,8 @@ architecture STRUCTURE of datapath is
   attribute SOFT_HLUTNM of \o_address_OBUF[8]_inst_i_2\ : label is "soft_lutpair4";
   attribute COMPARATOR_THRESHOLD : integer;
   attribute COMPARATOR_THRESHOLD of seq_end1_carry : label is 11;
+  attribute OPT_MODIFIED : string;
+  attribute OPT_MODIFIED of seq_end1_carry : label is "SWEEP";
 begin
   \FSM_onehot_curr_state_reg[13]\ <= \^fsm_onehot_curr_state_reg[13]\;
   Q(7 downto 0) <= \^q\(7 downto 0);
@@ -1432,9 +1432,7 @@ seq_end1_carry: unisim.vcomponents.CARRY4
      port map (
       CI => '0',
       CO(3) => seq_end1_carry_n_0,
-      CO(2) => seq_end1_carry_n_1,
-      CO(1) => seq_end1_carry_n_2,
-      CO(0) => seq_end1_carry_n_3,
+      CO(2 downto 0) => NLW_seq_end1_carry_CO_UNCONNECTED(2 downto 0),
       CYINIT => '0',
       DI(3) => seq_end1_carry_i_1_n_0,
       DI(2) => seq_end1_carry_i_2_n_0,
@@ -1553,6 +1551,8 @@ entity project_reti_logiche is
   );
   attribute NotValidForBitStream : boolean;
   attribute NotValidForBitStream of project_reti_logiche : entity is true;
+  attribute ECO_CHECKSUM : string;
+  attribute ECO_CHECKSUM of project_reti_logiche : entity is "d63bf91";
 end project_reti_logiche;
 
 architecture STRUCTURE of project_reti_logiche is

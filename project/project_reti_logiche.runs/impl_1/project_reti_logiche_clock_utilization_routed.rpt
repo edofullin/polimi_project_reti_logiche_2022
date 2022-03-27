@@ -1,7 +1,7 @@
 Copyright 1986-2021 Xilinx, Inc. All Rights Reserved.
 --------------------------------------------------------------------------------------------------
 | Tool Version : Vivado v.2021.2 (lin64) Build 3367213 Tue Oct 19 02:47:39 MDT 2021
-| Date         : Fri Mar 25 11:01:03 2022
+| Date         : Sun Mar 27 14:47:44 2022
 | Host         : edoardo-fedora running 64-bit unknown
 | Command      : report_clock_utilization -file project_reti_logiche_clock_utilization_routed.rpt
 | Design       : project_reti_logiche

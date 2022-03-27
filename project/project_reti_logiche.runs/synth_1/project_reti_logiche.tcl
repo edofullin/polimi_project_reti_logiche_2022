@@ -4,7 +4,7 @@
 
 set TIME_start [clock seconds] 
 namespace eval ::optrace {
-  variable script "/home/edoardo/Code/polimi_project_reti_logiche_2022/project_reti_logiche.runs/synth_1/project_reti_logiche.tcl"
+  variable script "/home/edoardo/Code/polimi_project_reti_logiche_2022/project/project_reti_logiche.runs/synth_1/project_reti_logiche.tcl"
   variable category "vivado_synth"
 }
 
@@ -70,26 +70,29 @@ proc create_report { reportName command } {
   }
 }
 OPTRACE "synth_1" START { ROLLUP_AUTO }
+set_param checkpoint.writeSynthRtdsInDcp 1
+set_param synth.incrementalSynthesisCache ./.Xil/Vivado-4029-edoardo-fedora/incrSyn
+set_msg_config -id {Synth 8-256} -limit 10000
+set_msg_config -id {Synth 8-638} -limit 10000
 OPTRACE "Creating in-memory project" START { }
 create_project -in_memory -part xc7a200tfbg484-1
 
 set_param project.singleFileAddWarning.threshold 0
 set_param project.compositeFile.enableAutoGeneration 0
 set_param synth.vivado.isSynthRun true
-set_property webtalk.parent_dir /home/edoardo/Code/polimi_project_reti_logiche_2022/project_reti_logiche.cache/wt [current_project]
-set_property parent.project_path /home/edoardo/Code/polimi_project_reti_logiche_2022/project_reti_logiche.xpr [current_project]
+set_property webtalk.parent_dir /home/edoardo/Code/polimi_project_reti_logiche_2022/project/project_reti_logiche.cache/wt [current_project]
+set_property parent.project_path /home/edoardo/Code/polimi_project_reti_logiche_2022/project/project_reti_logiche.xpr [current_project]
 set_property default_lib xil_defaultlib [current_project]
 set_property target_language VHDL [current_project]
-set_property ip_output_repo /home/edoardo/Code/polimi_project_reti_logiche_2022/project_reti_logiche.cache/ip [current_project]
+set_property ip_output_repo /home/edoardo/Code/polimi_project_reti_logiche_2022/project/project_reti_logiche.cache/ip [current_project]
 set_property ip_cache_permissions {read write} [current_project]
 OPTRACE "Creating in-memory project" END { }
 OPTRACE "Adding files" START { }
 read_vhdl -library xil_defaultlib {
-  /home/edoardo/Code/polimi_project_reti_logiche_2022/project_reti_logiche.srcs/sources_1/new/datapath.vhd
-  /home/edoardo/Code/polimi_project_reti_logiche_2022/project_reti_logiche.srcs/sources_1/new/serializer_register_8b.vhd
-  /home/edoardo/Code/polimi_project_reti_logiche_2022/project_reti_logiche.srcs/sources_1/new/shift_register_8b.vhd
-  /home/edoardo/Code/polimi_project_reti_logiche_2022/project_reti_logiche.srcs/sources_1/new/state_machine.vhd
-  /home/edoardo/Code/polimi_project_reti_logiche_2022/project_reti_logiche.srcs/sources_1/new/project_reti_logiche.vhd
+  /home/edoardo/Code/polimi_project_reti_logiche_2022/project/project_reti_logiche.srcs/sources_1/new/datapath.vhd
+  /home/edoardo/Code/polimi_project_reti_logiche_2022/project/project_reti_logiche.srcs/sources_1/new/serializer_register_8b.vhd
+  /home/edoardo/Code/polimi_project_reti_logiche_2022/project/project_reti_logiche.srcs/sources_1/new/state_machine.vhd
+  /home/edoardo/Code/polimi_project_reti_logiche_2022/project/project_reti_logiche.srcs/sources_1/new/project_reti_logiche.vhd
 }
 OPTRACE "Adding files" END { }
 # Mark all dcp files as not used in implementation to prevent them from being
