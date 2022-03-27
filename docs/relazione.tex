@@ -1,5 +1,17 @@
-\documentclass[12pt]{article}
+\documentclass{article}
+\usepackage[outputdir=out]{minted}
+\usepackage{geometry}
+\geometry {
+    top=20mm,
+    bmargin=20mm
+}
 \begin{document}
-Hello world! \newline
-Hello world! %math mode 
+
+Test2
+
+\begin{minted}[linenos]{python}
+    for i in range(0,2):
+        print(i)
+\end{minted}
+
 \end{document}
