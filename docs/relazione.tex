@@ -253,16 +253,26 @@ Uno schema di massima è rappresentato in figura, lo schema completo è a pagina
 
 \subsubsection{Input Buffer}
 
-Il buffer di input è realizzato con un registro che, in presenza del segnale 
+Il buffer di input è realizzato con un registro (entity \texttt{serializer\_register}) che, in presenza del segnale 
 \texttt{sr\_byte\_load} memorizza il dato attualmente presente sul bus \texttt{i\_data}.
 Il registro ha inoltre un parametro aggiuntivo \texttt{i\_sel} di lunghezza 3 bit (0-7)
 che permette di specificare quale bit si vuole in ouput.
+
+\pagebreak
 
 \subsubsection{Contatore}
 
 Il contatore è un contatore da 11 bit che conta il numero del bit corrente,
 in questo modo gli ultimi 3 bit (0-7) rappresentano il numero del bit corrente
 mentre i primi 8 bit rappresentano il numero (e quindi l'indirizzo) del byte corrente.
+
+Il contatore ha in ingresso un MUX dotato si un segnale di selezione a due bit che può fare le seguenti cose:
+\begin{itemize}[itemsep=4pt, topsep=4pt]
+    \item "00" - mantiene nel registro il valore corrente
+    \item "01" - avanza di un bit
+    \item "10" - avanza di un byte (8 bit)
+    \item "11" - resetta a 0 il contatore
+\end{itemize}
 
 \subsubsection{Convoluzionatore}
 
