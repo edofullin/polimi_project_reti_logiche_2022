@@ -5,6 +5,9 @@
 \usepackage[italian]{babel}
 \usepackage{graphicx}
 \usepackage[belowskip=-15pt,aboveskip=0pt]{caption}
+\usepackage{enumitem}
+
+\setlist{nosep}
 
 \graphicspath{{images/}}
 
@@ -137,16 +140,16 @@ verso \texttt{SINIT} quando \texttt{i\_rst = 1}
 \end{figure}
 
 \subsubsection{INIT}
-Stato iniziale in cui si trova la macchina prima dell'avvio dell'esecuzione.
+Stato iniziale in cui si trova la macchina prima dell'avvio dell'esecuzione.\\
 I segnali di controllo sono tutti disattivati
 
 \subsubsection{SINIT}
-Stato in cui si trova la macchina prima dell'avvio di una nuova sequenza
+Stato in cui si trova la macchina prima dell'avvio di una nuova sequenza\\
 I segnali di controllo sono tutti disattivati
 
 \subsubsection{RST}
 Reset di tutte le memoria interne al datapath per riportare rendere il datapath pronto per
-una nuova sequenza. 
+una nuova sequenza.\\
 I segnali di controllo attivi sono:
 \begin{itemize}
     \item \texttt{sm\_rst} che resetta stato corrente e uscita corrente del convoluzionatore
@@ -156,7 +159,7 @@ I segnali di controllo attivi sono:
 \end{itemize}
 
 \subsubsection{RNB}
-Lettura del numero di byte dalla RAM ad indirizzo 0.
+Lettura del numero di byte dalla RAM ad indirizzo 0.\\
 I segnali di controllo attivi sono:
 \begin{itemize}
     \item \texttt{nbytes\_load} che attiva il registro che salva il numero di byte
@@ -164,18 +167,18 @@ I segnali di controllo attivi sono:
 \end{itemize}
 
 \subsubsection{SWNB}
-Verifica lo stato corrente ed il termine della sequenza.
+Verifica lo stato corrente ed il termine della sequenza.\\
 I segnali di controllo sono tutti disattivati
 
 \subsubsection{RB}
-Lettura del byte corrente e memorizzazione.
+Lettura del byte corrente e memorizzazione.\\
 I segnali di controllo attivi sono:
 \begin{itemize}
     \item \texttt{sr\_byte\_load} che attiva la lettura del registro che contiene il byte
 \end{itemize}
 
 \subsubsection{SWB}
-Stato di stallo, in attesa che il byte veng letto con successo.
+Stato di stallo, in attesa che il byte veng letto con successo.\\
 I segnali di controllo attivi sono:
 \begin{itemize}
     \item \texttt{sr\_byte\_load} che attiva la lettura del registro che contiene il byte
@@ -183,7 +186,7 @@ I segnali di controllo attivi sono:
 
 \subsubsection{SM}
 Il bit corrente è ora presente all'ingresso del convoluzionatore, che viene abilitato e viene
-generato l'output relativo a quel bit.
+generato l'output relativo a quel bit.\\
 I segnali di controllo attivi sono:
 \begin{itemize}
     \item \texttt{sr\_ena} che attiva il registro serializzatore
@@ -191,7 +194,7 @@ I segnali di controllo attivi sono:
 \end{itemize}
 
 \subsubsection{W0 e W1}
-I bit di output vengono scritti nell'output buffer.
+I bit di output vengono scritti nell'output buffer.\\
 Al termine della scrittura si verifica il segnale \texttt{outbuff\_full} per decidere
 se è necessario scrivere il bufferi di output in memoria.
 I segnali di controllo sono:
@@ -202,14 +205,14 @@ I segnali di controllo sono:
 \end{itemize}
 
 \subsubsection{WB}
-Scrittura in memoria del buffer di output
+Scrittura in memoria del buffer di output.\\
 I segnali di controllo attivi sono:
 \begin{itemize}
     \item \texttt{writesel} che attiva il la scrittura in memoria e genera l'indirizzo corretto
 \end{itemize}
 
 \subsubsection{RSTOB}
-Reset del buffer di output
+Reset del buffer di output.\\
 I segnali di controllo attivi sono:
 \begin{itemize}
     \item \texttt{outbuff\_rst} che resetta il buffer di output
@@ -217,7 +220,7 @@ I segnali di controllo attivi sono:
 \end{itemize}
 
 \subsubsection{FIN}
-Il singolo bit è stato processato, viene avanzato il contatore.
+Il singolo bit è stato processato, viene avanzato il contatore.\\
 Si verifica il segnale \texttt{cbit\_end} per decidere se è necessario passare alla lettura del
 prossimo byte oppure del prossimo bit.
 I segnali di controllo attivi sono:
@@ -226,10 +229,176 @@ I segnali di controllo attivi sono:
 \end{itemize}
 
 \subsubsection{DONE}
-La sequenza è terminata, in attesa di i\_start o i\_rst per iniziare una nuova sequenza.
+La sequenza è terminata, in attesa di i\_start o i\_rst per iniziare una nuova sequenza.\\
 I segnali di controllo attivi sono:
 \begin{itemize}
     \item \texttt{o\_done} a 1 segnala il termine della computazione
 \end{itemize}
+
+\subsection{Datapath}
+
+Il datapath è il componente che si occupa della gestione del flusso dati, incluso l'input e l'output
+da e verso la memoria RAM.
+Nella attuale implementazione è stata usata una solo entity VHDL, che può essere vista come l'insieme
+di più moduli collegati tra loro come da schema in figura.
+I componenti del datapath sono pilotati dai segnali di controllo generati dalla macchina a stati che
+controlla il flusso di esecuzione.
+
+Uno schema di massima è rappresentato in figura, lo schema completo è a pagina xxx
+
+
+\begin{figure}[h!]
+    \includegraphics[scale=0.32]{datapath.png}
+\end{figure}
+
+\subsubsection{Input Buffer}
+
+Il buffer di input è realizzato con un registro che, in presenza del segnale 
+\texttt{sr\_byte\_load} memorizza il dato attualmente presente sul bus \texttt{i\_data}.
+Il registro ha inoltre un parametro aggiuntivo \texttt{i\_sel} di lunghezza 3 bit (0-7)
+che permette di specificare quale bit si vuole in ouput.
+
+\subsubsection{Contatore}
+
+Il contatore è un contatore da 11 bit che conta il numero del bit corrente,
+in questo modo gli ultimi 3 bit (0-7) rappresentano il numero del bit corrente
+mentre i primi 8 bit rappresentano il numero (e quindi l'indirizzo) del byte corrente.
+
+\subsubsection{Convoluzionatore}
+
+Il convoluzionatore (\texttt{state\_machine.vhd}) è una macchina a stati finiti dotata di enable e reset che
+realizza il convoluzionatore 1/2 come da specifica.
+
+\subsubsection{Calcolatore Indirizzo di Output}
+
+Il calcolatore dell'indirizzo di output è una ALU completamente combinatorica che, a partire
+dal numero del bit corrente (in arrivo dal contatore) permette il calcolo dell'indirizzo di output.
+Visto che il convoluzionatore per ogni bit di input restituisce sempre 2 bit l'indirizzo di output
+sarà sempre $2 * curr\_pos + sm\_w\_sel$ dove \texttt{curr\_pos} è l'indirizzo corrente in arrivo dal
+contatore mentre \texttt{sm\_w\_sel} è un segnale di controllo generato dalla macchina a stati che è attivo
+(ad 1) se e solo se si vuole scrivere il secondo byte di output dal convoluzionatore.
+Nel caso in cui la scrittura in memoria sia abilitata, viene anche sommata la costante \texttt{998}.
+\\
+\\
+A causa del fatto che l'indirizzo di output deve essere (almeno) un bit più lungo di quello
+di input si è deciso di stritturare tutto il componente per lavorare direttamente su indirizzi da 16 bit 
+(che è la dimensione richiesta dalla memoria), è quindi richiesto il padding sull'indirizzo corrente
+restituito dal contatore.
+
+
+\subsubsection{Buffer di Output}
+
+Il buffer di output è un componente sequenziale/combinarico che memorizza temporaneamente il risultato della
+computazione, in attesa della scrittura in memoria. 
+Il componente si rende necessario a causa dell'indirizzamento al byte della memoria.
+
+Il buffer, quando abilitato alla scrittura, prende uno dei due bit in arrivo dal convoluzionatore tramite un mux 
+pilotato dal segnale \texttt{sm\_w\_sel}, lo shifta a sinistra del numero di posizioni in arrivo
+dal calcolatore dell'indirizzo di output e lo scrive nella posizione corretta 
+mettendolo in bitwise OR con il valore attuale.
+\pagebreak
+\section{Simulazione}
+
+\section{Sintesi}
+
+Il componente è correttamente sintetizzabile e con la versione corrente di Vivado è implementabile su hardware 
+XXXX usando XXX Lookup Tables e XXX Flip-Flop.
+\\
+\noindent In particolare, i XXXX flip flop sono così ditribuiti:
+\begin{itemize}[itemsep=4pt, topsep=4pt]
+    \item 4 bit per la macchina a stati di controllo
+    \item 2 bit per lo stato corrente del convoluzionatore
+    \item 2 bit per l'uscita corrente del convoluzionatore
+    \item 8 bit per il buffer di output
+    \item 11 bit per la posizione corrente
+    \item 8 bit per il byte corrente
+    \item 8 bit per il numero di bytes da leggere
+    \item XXX \\
+\end{itemize}
+
+\noindent La sintesi non genera latch.
+
+%% TIMING DI SINTESI?
+
+\section{Simulazione e casi di test}
+
+Il componente è stato simulato su una varietà di casi di test, che comprendono anche
+gli edge-case più comuni.
+Viene riportato l'andamento della simulazione per una selezione ci casi di test.
+
+Sono stati effettuati i seguenti casi di test, dei quali per alcuni viene riportato parte dell'esecuzione: %% TODO
+
+\begin{itemize}[itemsep=4pt, topsep=4pt]
+    \item test con reset durante l'esecuzione
+    \item test con sequenza di lunghezza zero
+    \item test con sequenza di lunghezza massima (255)
+    \item test con cambio della sequenza al termine dell'esecuzione
+    \item test con sequenze generate casualmente
+\end{itemize}
+
+\subsubsection{Test con sequenza vuota}
+
+Nel caso la sequenza sia vuota (RAM[0] = 0), dopo la scrittura del numero di bytes nell'apposito registro,
+il datapath solleverà quindi immediatamente il segnale \texttt{seq\_end} che porterà la macchina a stati
+nello stato di DONE senza mai scrivere in memoria.
+
+\begin{minted}{vhdl}
+    seq_end <= '1' when unsigned(curr_pos(10 downto 3)) > nbytes or 
+                        curr_pos_overflow = '1' else '0';
+\end{minted}
+
+%% TODO
+
+\subsubsection{Test con sequenza di lunghezza massima}
+
+Il test con sequenza si lunghezza massima è stato quello con il maggior numero di problemi.
+Questo perchè dopo aver processato l'ultimo byte il registro \texttt{curr\_pos} va in overflow
+nello stato \texttt{FIN} tornando a zero.
+\noindent Questo comporta che quando la macchina a stati torna nello stato \texttt{SWNB} il registro \texttt{curr\_pos} 
+vale zero, che è minore di \texttt{nbytes}, quindi l'esecuzione riprende dall'inizio.
+
+\noindent Per risolvere il problema è stato quindi introdotto un segnale \texttt{curr\_pos\_overflow} che viene alzato in maniera sequenziale
+quando il registro \texttt{curr\_pos} passa da 255 a 0 ed il segnale che pilota il contatore è in posizione "+1" (01)
+
+\noindent Il segnale di fine sequenza viene alzato (anche) quando questo nuovo segnale è ad 1.
+
+\begin{minted}{vhdl}
+    seq_end <= '1' when unsigned(curr_pos(10 downto 3)) > nbytes or 
+                        curr_pos_overflow = '1' else '0';
+\end{minted}
+
+%% TODO
+
+\subsubsection{Reset}
+
+Quando viene alzato il segnale di reset la FSM di controllo passa sempre nello stato SINIT, ricominciando l'esecuzione.\\
+\noindent Quando poi viene alzato il segnale di start la FSM di controllo passa nello stato \texttt{RST}
+che provvedere al reset di tutti i componenti interni del datapath e del convoluzionatore.
+
+\begin{minted}{vhdl}
+    if i_rst = '1' then
+        curr_state <= S_SINIT;
+\end{minted}
+
+\subsubsection{Test con sequenze multiple in fila}
+
+Alla fine della sequenza la FSM di controllo alza il segnale \texttt{o\_done}, nel caso in cui \texttt{i\_start} venga abbassato
+la macchina si porta nello stato SINIT e si prepara ad accettare una nuova sequenza.
+
+%% TODO
+
+\section{Scelte progettuali}
+
+Si è scelto di scrivere il codice VHDL "a più basso livello" possibile in modo
+che la architettura risultante sia il più possibile simile a quella progettata.
+Si sarebbe potuto, in alternativa, usare più strutture \texttt{case} ed \texttt{if - elsif} 
+al posto di usare MUX e segnali aggiuntivi.
+
+
+
+
+
+
+
 
 \end{document}
