@@ -119,6 +119,89 @@ In particolare:
 
 \section{Architettura}
 
+La architettura del componente è composta principalmente da due moduli: una macchina a stati di controllo
+e da un datapath che gestisce il flusso dati.
+La FSM di controllo ha il compito di generare i segnali di controllo che attivano, disattivano o modificano
+il comportamento dei sottomoduli del datapath in base allo stato attuale della esecuzione.
+Il datapath gestisce l'intero flusso di dati, dalla lettura della memoria di input alla serializzazione, 
+alla bufferizzazione del risultato e alla sua scrittura in memoria.
+
+\noindent Vengono illustrati più in dettaglio i singoli componenti.
+
+\subsection{Datapath}
+
+Il datapath è il componente che si occupa della gestione del flusso dati, incluso l'input e l'output
+da e verso la memoria RAM.
+Nella attuale implementazione è stata usata una solo entity VHDL, che può essere vista come l'insieme
+di più moduli collegati tra loro come dallo schema in figura.
+I componenti del datapath sono pilotati dai segnali di controllo generati dalla macchina a stati che
+controlla il flusso di esecuzione.
+
+\begin{figure}[h!]
+    \centering
+    \includegraphics[scale=0.32]{datapath.png}
+    \label{fig:datapath_small}
+    \caption{Schema ad alto livello del componente datapath, schema più dettagliato a pagina XXX} %% TODO
+\end{figure}
+
+\subsubsection{Input Buffer}
+
+Il buffer di input è realizzato con un registro (entity \texttt{serializer\_register}) che, in presenza del segnale 
+\texttt{sr\_byte\_load} memorizza il dato attualmente presente sul bus \texttt{i\_data} e lo tiene memorizzato.
+Il registro ha un parametro aggiuntivo \texttt{i\_sel} di lunghezza 3 bit (0-7)
+che permette di specificare quale singolo bit interno al byte memorizzato si vuole in ouput.
+
+\subsubsection{Contatore}
+
+Il contatore è un semplice contatore da 11 bit che tiene traccia del numero del bit corrente,
+in questo modo gli ultimi 3 bit (0-7) rappresentano il numero del bit corrente
+mentre i primi 8 bit rappresentano il numero (e quindi l'indirizzo) del byte corrente.
+\pagebreak
+
+\noindent Il contatore è pilotato da un mux a due ingressi che in base agli ingressi fa fare al registro le seguenti cose:
+\begin{itemize}[itemsep=4pt, topsep=4pt]
+    \item "00" - mantiene nel registro il valore corrente
+    \item "01" - avanza di un bit
+    \item "10" - avanza di un byte (8 bit)
+    \item "11" - resetta a 0 il contatore
+\end{itemize}
+
+\subsubsection{Convoluzionatore}
+
+Il convoluzionatore (\texttt{state\_machine.vhd}) è una semplice macchina di Mealy dotata di enable e reset che
+realizza il convoluzionatore 1/2 come da specifica.
+
+\subsubsection{Calcolatore Indirizzo di Output}
+
+Il calcolatore dell'indirizzo di output è una ALU completamente combinatoria che, a partire
+dal numero del bit corrente (in arrivo dal contatore) permette il calcolo dell'indirizzo di output.
+\\
+\noindent Visto che il convoluzionatore per ogni bit di input restituisce sempre 2 bit il numero del bit in output
+sarà sempre $2 * curr\_pos + sm\_w\_sel$ dove \texttt{curr\_pos} è il numero del bit corrente in arrivo dal
+contatore mentre \texttt{sm\_w\_sel} è un segnale di controllo generato dalla macchina a stati che è attivo
+(ad 1) se e solo se si vuole scrivere il secondo byte di output dal convoluzionatore.
+Nel caso in cui la scrittura in memoria sia abilitata, viene anche sommata la costante \texttt{998}.
+\\
+\\
+A causa del fatto che l'indirizzo di output deve essere (almeno) un bit più lungo di quello
+di input si è deciso di strutturare tutto il componente per lavorare direttamente su indirizzi da 16 bit 
+(che è la dimensione richiesta dalla memoria), è quindi richiesto il padding sull'indirizzo corrente
+restituito dal contatore per renderlo anch'esso da 16 bit.
+
+
+\subsubsection{Buffer di Output}
+
+Il buffer di output è un componente sequenziale/combinarico che memorizza temporaneamente il risultato della
+computazione, in attesa della scrittura in memoria. 
+Il componente si rende necessario a causa dell'indirizzamento al byte della memoria.
+
+Il buffer, quando abilitato alla scrittura, prende uno dei due bit in arrivo dal convoluzionatore tramite un mux 
+pilotato dal segnale \texttt{sm\_w\_sel}, lo shifta a sinistra del numero di posizioni in arrivo
+dal calcolatore dell'indirizzo di output e lo scrive nella posizione corretta 
+mettendolo in bitwise OR con il valore attuale.
+
+\pagebreak
+
 \subsection{Macchina a stati}
 
 Il modulo è composto da una macchina a 14 stati il cui compito è quello di generare
@@ -148,7 +231,7 @@ Stato in cui si trova la macchina prima dell'avvio di una nuova sequenza\\
 I segnali di controllo sono tutti disattivati
 
 \subsubsection{RST}
-Reset di tutte le memoria interne al datapath per riportare rendere il datapath pronto per
+Reset di tutti i registri interni al datapath per rendere il datapath pronto per
 una nuova sequenza.\\
 I segnali di controllo attivi sono:
 \begin{itemize}
@@ -162,23 +245,23 @@ I segnali di controllo attivi sono:
 Lettura del numero di byte dalla RAM ad indirizzo 0.\\
 I segnali di controllo attivi sono:
 \begin{itemize}
-    \item \texttt{nbytes\_load} che attiva il registro che salva il numero di byte
+    \item \texttt{nbytes\_load} che attiva il registro che salva il numero di byte da processare
     \item \texttt{curr\_mux} ad 10 che fa avanzare la posizione corrente al prossimo byte
 \end{itemize}
 
 \subsubsection{SWNB}
-Verifica lo stato corrente ed il termine della sequenza.\\
+Stato di stallo in attesa della lettura dalla memoria, verifica lo stato corrente ed il termine della sequenza.\\
 I segnali di controllo sono tutti disattivati
 
 \subsubsection{RB}
-Lettura del byte corrente e memorizzazione.\\
+Lettura del byte corrente e memorizzazione nel buffer di input.\\
 I segnali di controllo attivi sono:
 \begin{itemize}
     \item \texttt{sr\_byte\_load} che attiva la lettura del registro che contiene il byte
 \end{itemize}
 
 \subsubsection{SWB}
-Stato di stallo, in attesa che il byte veng letto con successo.\\
+Stato di stallo in attesa che il byte veng letto con successo.\\
 I segnali di controllo attivi sono:
 \begin{itemize}
     \item \texttt{sr\_byte\_load} che attiva la lettura del registro che contiene il byte
@@ -196,19 +279,19 @@ I segnali di controllo attivi sono:
 \subsubsection{W0 e W1}
 I bit di output vengono scritti nell'output buffer.\\
 Al termine della scrittura si verifica il segnale \texttt{outbuff\_full} per decidere
-se è necessario scrivere il bufferi di output in memoria.
+se è necessario scrivere il buffer di output nella memoria RAM.
 I segnali di controllo sono:
 \begin{itemize}
     \item \texttt{sm\_w\_sel} rispettivamente a 0 in W0 e 1 in W1 che indica se viene 
-                              scritto il bit 0 alla posizione corrente o il bit 1 alla posizione corrente + 1
-    \item \texttt{outbuff\_load} che abilita la scrittura nel bufferi di output
+                              scritto il bit 0 o il bit 1 del convoluzionatore
+    \item \texttt{outbuff\_load} che abilita la scrittura nel buffer di output
 \end{itemize}
 
 \subsubsection{WB}
-Scrittura in memoria del buffer di output.\\
+Scrittura del buffer di output in memoria RAM.\\
 I segnali di controllo attivi sono:
 \begin{itemize}
-    \item \texttt{writesel} che attiva il la scrittura in memoria e genera l'indirizzo corretto
+    \item \texttt{writesel (o\_we)} che attiva il la scrittura in memoria e genera l'indirizzo corretto
 \end{itemize}
 
 \subsubsection{RSTOB}
@@ -232,88 +315,17 @@ I segnali di controllo attivi sono:
 La sequenza è terminata, in attesa di i\_start o i\_rst per iniziare una nuova sequenza.\\
 I segnali di controllo attivi sono:
 \begin{itemize}
-    \item \texttt{o\_done} a 1 segnala il termine della computazione
+    \item \texttt{o\_done} a 1 che segnala il termine della computazione
 \end{itemize}
 
-\subsection{Datapath}
-
-Il datapath è il componente che si occupa della gestione del flusso dati, incluso l'input e l'output
-da e verso la memoria RAM.
-Nella attuale implementazione è stata usata una solo entity VHDL, che può essere vista come l'insieme
-di più moduli collegati tra loro come da schema in figura.
-I componenti del datapath sono pilotati dai segnali di controllo generati dalla macchina a stati che
-controlla il flusso di esecuzione.
-
-Uno schema di massima è rappresentato in figura, lo schema completo è a pagina xxx
-
-
-\begin{figure}[h!]
-    \includegraphics[scale=0.32]{datapath.png}
-\end{figure}
-
-\subsubsection{Input Buffer}
-
-Il buffer di input è realizzato con un registro (entity \texttt{serializer\_register}) che, in presenza del segnale 
-\texttt{sr\_byte\_load} memorizza il dato attualmente presente sul bus \texttt{i\_data}.
-Il registro ha inoltre un parametro aggiuntivo \texttt{i\_sel} di lunghezza 3 bit (0-7)
-che permette di specificare quale bit si vuole in ouput.
-
-\pagebreak
-
-\subsubsection{Contatore}
-
-Il contatore è un contatore da 11 bit che conta il numero del bit corrente,
-in questo modo gli ultimi 3 bit (0-7) rappresentano il numero del bit corrente
-mentre i primi 8 bit rappresentano il numero (e quindi l'indirizzo) del byte corrente.
-
-Il contatore ha in ingresso un MUX dotato si un segnale di selezione a due bit che può fare le seguenti cose:
-\begin{itemize}[itemsep=4pt, topsep=4pt]
-    \item "00" - mantiene nel registro il valore corrente
-    \item "01" - avanza di un bit
-    \item "10" - avanza di un byte (8 bit)
-    \item "11" - resetta a 0 il contatore
-\end{itemize}
-
-\subsubsection{Convoluzionatore}
-
-Il convoluzionatore (\texttt{state\_machine.vhd}) è una macchina a stati finiti dotata di enable e reset che
-realizza il convoluzionatore 1/2 come da specifica.
-
-\subsubsection{Calcolatore Indirizzo di Output}
-
-Il calcolatore dell'indirizzo di output è una ALU completamente combinatorica che, a partire
-dal numero del bit corrente (in arrivo dal contatore) permette il calcolo dell'indirizzo di output.
-Visto che il convoluzionatore per ogni bit di input restituisce sempre 2 bit l'indirizzo di output
-sarà sempre $2 * curr\_pos + sm\_w\_sel$ dove \texttt{curr\_pos} è l'indirizzo corrente in arrivo dal
-contatore mentre \texttt{sm\_w\_sel} è un segnale di controllo generato dalla macchina a stati che è attivo
-(ad 1) se e solo se si vuole scrivere il secondo byte di output dal convoluzionatore.
-Nel caso in cui la scrittura in memoria sia abilitata, viene anche sommata la costante \texttt{998}.
-\\
-\\
-A causa del fatto che l'indirizzo di output deve essere (almeno) un bit più lungo di quello
-di input si è deciso di stritturare tutto il componente per lavorare direttamente su indirizzi da 16 bit 
-(che è la dimensione richiesta dalla memoria), è quindi richiesto il padding sull'indirizzo corrente
-restituito dal contatore.
-
-
-\subsubsection{Buffer di Output}
-
-Il buffer di output è un componente sequenziale/combinarico che memorizza temporaneamente il risultato della
-computazione, in attesa della scrittura in memoria. 
-Il componente si rende necessario a causa dell'indirizzamento al byte della memoria.
-
-Il buffer, quando abilitato alla scrittura, prende uno dei due bit in arrivo dal convoluzionatore tramite un mux 
-pilotato dal segnale \texttt{sm\_w\_sel}, lo shifta a sinistra del numero di posizioni in arrivo
-dal calcolatore dell'indirizzo di output e lo scrive nella posizione corretta 
-mettendolo in bitwise OR con il valore attuale.
 \pagebreak
 
 \section{Sintesi}
 
 \subsection{Report Utilization}
 
-Il componente è correttamente sintetizzabile e con la versione corrente di Vivado (2021.2) è implementabile su hardware FPGA
-xc7a200tfbg484 usando 63 Lookup Tables e 53 Flip-Flop.
+Il componente è correttamente sintetizzabile, con la versione corrente di Vivado (2021.2) è implementabile su hardware FPGA
+xc7a200tfbg484 usando 63 Lookup Tables (LUT) e 53 Flip-Flop.
 \\
 \\
 \noindent In particolare, i 53 flip flop (1 bit a flip flop) sono così ditribuiti:
@@ -337,7 +349,7 @@ uno Slack (MET) di 11.677 ns ed un Data Path delay di 2.971 ns, quindi c'è marg
 alzare la frequenza del sistema.
 \\
 
-\noindent Contenuto constraint:
+\noindent Contenuto del file di constraint:
 \begin{minted}{bash}
     create_clock -period 15 -name clock -waveform {0 5} [get_ports i_clk]
 \end{minted}
@@ -346,7 +358,7 @@ alzare la frequenza del sistema.
 
 Il componente è stato simulato su una varietà di casi di test, che comprendono anche
 gli edge-case più comuni.\\
-Viene riportato l'andamento della simulazione per una selezione ci casi di test.
+Viene riportato l'andamento di alcuni segnali in alcune parti della simulazione per una selezione dei casi testati.
 
 \noindent Sono stati effettuati i seguenti casi di test, dei quali per alcuni viene riportata parte della simulazione: %% TODO
 
@@ -447,12 +459,6 @@ Si è scelto di scrivere il codice VHDL "a più basso livello" possibile in modo
 che la architettura risultante sia il più possibile simile a quella progettata.
 Si sarebbe potuto, in alternativa, usare più strutture \texttt{case} ed \texttt{if - elsif} 
 al posto di usare MUX e segnali aggiuntivi.
-
-
-
-
-
-
 
 
 \end{document}
