@@ -307,14 +307,16 @@ pilotato dal segnale \texttt{sm\_w\_sel}, lo shifta a sinistra del numero di pos
 dal calcolatore dell'indirizzo di output e lo scrive nella posizione corretta 
 mettendolo in bitwise OR con il valore attuale.
 \pagebreak
-\section{Simulazione}
 
 \section{Sintesi}
 
-Il componente è correttamente sintetizzabile e con la versione corrente di Vivado è implementabile su hardware 
-XXXX usando XXX Lookup Tables e XXX Flip-Flop.
+\subsection{Report Utilization}
+
+Il componente è correttamente sintetizzabile e con la versione corrente di Vivado (2021.2) è implementabile su hardware FPGA
+xc7a200tfbg484 usando 63 Lookup Tables e 53 Flip-Flop.
 \\
-\noindent In particolare, i XXXX flip flop sono così ditribuiti:
+\\
+\noindent In particolare, i 53 flip flop (1 bit a flip flop) sono così ditribuiti:
 \begin{itemize}[itemsep=4pt, topsep=4pt]
     \item 4 bit per la macchina a stati di controllo
     \item 2 bit per lo stato corrente del convoluzionatore
@@ -323,63 +325,100 @@ XXXX usando XXX Lookup Tables e XXX Flip-Flop.
     \item 11 bit per la posizione corrente
     \item 8 bit per il byte corrente
     \item 8 bit per il numero di bytes da leggere
-    \item XXX \\
+    \item 10 bit per segnali di controllo
 \end{itemize}
 
-\noindent La sintesi non genera latch.
+\noindent La sintesi non inferisce latch.
 
-%% TIMING DI SINTESI?
+\subsection{Report Timing}
+
+Utilizzando un constraint con clock 15 ns, Vivado (2021.2) riporta
+uno Slack (MET) di 11.677 ns ed un Data Path delay di 2.971 ns, quindi c'è margine per
+alzare la frequenza del sistema.
+\\
+
+\noindent Contenuto constraint:
+\begin{minted}{bash}
+    create_clock -period 15 -name clock -waveform {0 5} [get_ports i_clk]
+\end{minted}
 
 \section{Simulazione e casi di test}
 
 Il componente è stato simulato su una varietà di casi di test, che comprendono anche
-gli edge-case più comuni.
+gli edge-case più comuni.\\
 Viene riportato l'andamento della simulazione per una selezione ci casi di test.
 
-Sono stati effettuati i seguenti casi di test, dei quali per alcuni viene riportato parte dell'esecuzione: %% TODO
+\noindent Sono stati effettuati i seguenti casi di test, dei quali per alcuni viene riportata parte della simulazione: %% TODO
 
 \begin{itemize}[itemsep=4pt, topsep=4pt]
     \item test con reset durante l'esecuzione
     \item test con sequenza di lunghezza zero
-    \item test con sequenza di lunghezza massima (255)
+    \item test con sequenza di lunghezza massima (0xff)
     \item test con cambio della sequenza al termine dell'esecuzione
-    \item test con sequenze generate casualmente
+    \item test con sequenze generate casualmente di lunghezza casuale
 \end{itemize}
+
+\pagebreak
 
 \subsubsection{Test con sequenza vuota}
 
 Nel caso la sequenza sia vuota (RAM[0] = 0), dopo la scrittura del numero di bytes nell'apposito registro,
-il datapath solleverà quindi immediatamente il segnale \texttt{seq\_end} che porterà la macchina a stati
-nello stato di DONE senza mai scrivere in memoria.
+il datapath alzerà immediatamente il segnale \texttt{seq\_end} che porterà la macchina a stati
+nello stato di DONE senza mai scrivere nulla in memoria.
 
 \begin{minted}{vhdl}
-    seq_end <= '1' when unsigned(curr_pos(10 downto 3)) > nbytes or 
-                        curr_pos_overflow = '1' else '0';
+    seq_end <= '1' when unsigned(curr_pos(10 downto 3)) > nbytes else '0';
 \end{minted}
 
-%% TODO
+\begin{figure}[h!]
+    \centering
+    \includegraphics[scale=0.5]{sim_minlen_init.png}
+    \label{img:sim_min_init}
+    \caption{Simulazione input lunghezza nulla}
+\end{figure}
+
+% \pagebreak
 
 \subsubsection{Test con sequenza di lunghezza massima}
 
-Il test con sequenza si lunghezza massima è stato quello con il maggior numero di problemi.
+Il test con sequenza si lunghezza massima è stato quello con il maggior numero di problemi. \\
 Questo perchè dopo aver processato l'ultimo byte il registro \texttt{curr\_pos} va in overflow
 nello stato \texttt{FIN} tornando a zero.
-\noindent Questo comporta che quando la macchina a stati torna nello stato \texttt{SWNB} il registro \texttt{curr\_pos} 
-vale zero, che è minore di \texttt{nbytes}, quindi l'esecuzione riprende dall'inizio.
+\noindent Questo comporta che quando la macchina a stati torna nello stato \texttt{SWNB} con il registro \texttt{curr\_pos} 
+che vale zero, minore di \texttt{nbytes}, quindi l'esecuzione riprende dall'inizio.
 
 \noindent Per risolvere il problema è stato quindi introdotto un segnale \texttt{curr\_pos\_overflow} che viene alzato in maniera sequenziale
 quando il registro \texttt{curr\_pos} passa da 255 a 0 ed il segnale che pilota il contatore è in posizione "+1" (01)
 
-\noindent Il segnale di fine sequenza viene alzato (anche) quando questo nuovo segnale è ad 1.
+\noindent Il segnale di fine sequenza è quindi stato modificato per essere attivo anche in caso di
+overflow.
 
 \begin{minted}{vhdl}
     seq_end <= '1' when unsigned(curr_pos(10 downto 3)) > nbytes or 
                         curr_pos_overflow = '1' else '0';
 \end{minted}
 
+\begin{figure}[h!]
+    \centering
+    \includegraphics[scale=0.3]{sim_maxlen_init.png}
+    \label{img:sim_max_init}
+    \caption{Parte iniziale della simulazione con input di lunghezza massima}
+\end{figure}
+
+\begin{figure}[h!]
+    \centering
+    \includegraphics[scale=0.3]{sim_maxlen_end.png}
+    \label{img:sim_max_end}
+    \caption{Parte finale della simulazione con input di lunghezza massima, si vede curr\_pos andare in overflow e l'alzamento del segnale di overflow}
+\end{figure}
+
 %% TODO
 
-\subsubsection{Reset}
+\pagebreak
+
+\vspace{10cm}
+
+\subsubsection{Test sequenza con reset}
 
 Quando viene alzato il segnale di reset la FSM di controllo passa sempre nello stato SINIT, ricominciando l'esecuzione.\\
 \noindent Quando poi viene alzato il segnale di start la FSM di controllo passa nello stato \texttt{RST}
@@ -395,7 +434,12 @@ che provvedere al reset di tutti i componenti interni del datapath e del convolu
 Alla fine della sequenza la FSM di controllo alza il segnale \texttt{o\_done}, nel caso in cui \texttt{i\_start} venga abbassato
 la macchina si porta nello stato SINIT e si prepara ad accettare una nuova sequenza.
 
-%% TODO
+\begin{figure}[h!]
+    \centering
+    \includegraphics[scale=0.3]{sim_mult_seq.png}
+    \label{img:sim_multseq_change}
+    \caption{Simulazione fine di una sequenza e inizio della successiva}
+\end{figure}
 
 \section{Scelte progettuali}
 
