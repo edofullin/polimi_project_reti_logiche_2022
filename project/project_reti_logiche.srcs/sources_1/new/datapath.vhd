@@ -138,6 +138,8 @@ currbit_shift <= std_logic_vector(shift_left(unsigned(curr_out_bit_vec), 7 - to_
     
     if curr_pos = "11111111111" and cpos_mux = "00000000000" then
        curr_pos_overflow <= '1';
+    else
+       curr_pos_overflow <= '0';
     end if;
  
      curr_pos <= cpos_mux;
