@@ -141,7 +141,7 @@ controlla il flusso di esecuzione.
     \centering
     \includegraphics[scale=0.32]{datapath.png}
     \label{fig:datapath_small}
-    \caption{Schema ad alto livello del componente datapath, schema più dettagliato a pagina XXX} %% TODO
+    \caption{Schema ad alto livello del componente datapath} %% TODO
 \end{figure}
 
 \subsubsection{Input Buffer}
@@ -180,7 +180,9 @@ dal numero del bit corrente (in arrivo dal contatore) permette il calcolo dell'i
 sarà sempre $2 * curr\_pos + sm\_w\_sel$ dove \texttt{curr\_pos} è il numero del bit corrente in arrivo dal
 contatore mentre \texttt{sm\_w\_sel} è un segnale di controllo generato dalla macchina a stati che è attivo
 (ad 1) se e solo se si vuole scrivere il secondo byte di output dal convoluzionatore.
-Nel caso in cui la scrittura in memoria sia abilitata, viene anche sommata la costante \texttt{998}.
+Nel caso in cui la scrittura in memoria sia abilitata, viene anche sommata la costante \texttt{1000} 
+a cui viene sottratto \texttt{2} visto che un byte in input (quindi due in output) sarebbe usato dal numero di byte della sequenza 
+che non deve essere riportato in output.
 \\
 \\
 A causa del fatto che l'indirizzo di output deve essere (almeno) un bit più lungo di quello
@@ -188,6 +190,19 @@ di input si è deciso di strutturare tutto il componente per lavorare direttamen
 (che è la dimensione richiesta dalla memoria), è quindi richiesto il padding sull'indirizzo corrente
 restituito dal contatore per renderlo anch'esso da 16 bit.
 
+\begin{minted}[fontsize=\footnotesize]{vhdl}
+-- calcolo della posizione di ouput (2 * currpos [+ 1])                    
+with sm_w_sel select
+    out_pos <= std_logic_vector(shift_left(unsigned("00000" & curr_pos), 1)) when '0',
+                std_logic_vector(shift_left(unsigned("00000" & curr_pos), 1) + 1) when '1',
+                (others => 'X') when others;
+
+-- output inidirizzo memoria
+with writesel select
+    o_addr <= std_logic_vector(unsigned("000" & out_pos(15 downto 3)) + 998) when '1',
+            std_logic_vector(unsigned(X"00" & curr_pos(10 downto 3))) when '0',
+            (others => '0') when others;  
+\end{minted}
 
 \subsubsection{Buffer di Output}
 
@@ -195,12 +210,13 @@ Il buffer di output è un componente sequenziale/combinarico che memorizza tempo
 computazione, in attesa della scrittura in memoria. 
 Il componente si rende necessario a causa dell'indirizzamento al byte della memoria.
 
+\pagebreak
+
 Il buffer, quando abilitato alla scrittura, prende uno dei due bit in arrivo dal convoluzionatore tramite un mux 
 pilotato dal segnale \texttt{sm\_w\_sel}, lo shifta a sinistra del numero di posizioni in arrivo
 dal calcolatore dell'indirizzo di output e lo scrive nella posizione corretta 
 mettendolo in bitwise OR con il valore attuale.
 
-\pagebreak
 
 \subsection{Macchina a stati}
 
@@ -229,6 +245,8 @@ I segnali di controllo sono tutti disattivati
 \subsubsection{SINIT}
 Stato in cui si trova la macchina prima dell'avvio di una nuova sequenza\\
 I segnali di controllo sono tutti disattivati
+
+\pagebreak
 
 \subsubsection{RST}
 Reset di tutti i registri interni al datapath per rendere il datapath pronto per
@@ -325,7 +343,7 @@ I segnali di controllo attivi sono:
 \subsection{Report Utilization}
 
 Il componente è correttamente sintetizzabile, con la versione corrente di Vivado (2021.2) è implementabile su hardware FPGA
-xc7a200tfbg484 usando 63 Lookup Tables (LUT) e 53 Flip-Flop.
+xc7a200tfbg484 usando 54 Lookup Tables (LUT) e 53 Flip-Flop.
 \\
 \\
 \noindent In particolare, i 53 flip flop (1 bit a flip flop) sono così ditribuiti:
@@ -337,15 +355,32 @@ xc7a200tfbg484 usando 63 Lookup Tables (LUT) e 53 Flip-Flop.
     \item 11 bit per la posizione corrente
     \item 8 bit per il byte corrente
     \item 8 bit per il numero di bytes da leggere
-    \item 10 bit per segnali di controllo
+    \item 10 bit per segnali di controllo vari
 \end{itemize}
 
 \noindent La sintesi non inferisce latch.
 
+\begin{minted}{text}
+
++-------------------------+------+-------+------------+-----------+-------+
+|        Site Type        | Used | Fixed | Prohibited | Available | Util% |
++-------------------------+------+-------+------------+-----------+-------+
+| Slice LUTs*             |   54 |     0 |          0 |    134600 |  0.04 |
+|   LUT as Logic          |   54 |     0 |          0 |    134600 |  0.04 |
+|   LUT as Memory         |    0 |     0 |          0 |     46200 |  0.00 |
+| Slice Registers         |   53 |     0 |          0 |    269200 |  0.02 |
+|   Register as Flip Flop |   53 |     0 |          0 |    269200 |  0.02 |
+|   Register as Latch     |    0 |     0 |          0 |    269200 |  0.00 |
+| F7 Muxes                |    0 |     0 |          0 |     67300 |  0.00 |
+| F8 Muxes                |    0 |     0 |          0 |     33650 |  0.00 |
++-------------------------+------+-------+------------+-----------+-------+
+
+\end{minted}
+
 \subsection{Report Timing}
 
-Utilizzando un constraint con clock 15 ns, Vivado (2021.2) riporta
-uno Slack (MET) di 11.677 ns ed un Data Path delay di 2.971 ns, quindi c'è margine per
+Utilizzando un constraint con clock 15 ns, Vivado (versione 2021.2) riporta
+uno Slack (MET) di 11.675 ns ed un Data Path delay di 2.943 ns, quindi c'è margine per
 alzare la frequenza del sistema.
 \\
 
@@ -353,6 +388,31 @@ alzare la frequenza del sistema.
 \begin{minted}{bash}
     create_clock -period 15 -name clock -waveform {0 5} [get_ports i_clk]
 \end{minted}
+
+\pagebreak
+
+\section{Implementation}
+
+La implementation riesce a ottimizzare ulteriormente il sistema, portando il numero di LUT a 51.
+
+\noindent Dopo la implementation lo Slack scende a 11.660ns ed il datapath delay sale a 3.317 ns \texttt{logic 1.240ns 37.382\%, route 2.077ns 62.618\%}
+
+\begin{minted}{text}
+
++-------------------------+------+-------+------------+-----------+-------+
+|        Site Type        | Used | Fixed | Prohibited | Available | Util% |
++-------------------------+------+-------+------------+-----------+-------+
+| Slice LUTs*             |   51 |     0 |          0 |    134600 |  0.04 |
+|   LUT as Logic          |   51 |     0 |          0 |    134600 |  0.04 |
+|   LUT as Memory         |    0 |     0 |          0 |     46200 |  0.00 |
+| Slice Registers         |   53 |     0 |          0 |    269200 |  0.02 |
+|   Register as Flip Flop |   53 |     0 |          0 |    269200 |  0.02 |
+|   Register as Latch     |    0 |     0 |          0 |    269200 |  0.00 |
+| F7 Muxes                |    0 |     0 |          0 |     67300 |  0.00 |
+| F8 Muxes                |    0 |     0 |          0 |     33650 |  0.00 |
++-------------------------+------+-------+------------+-----------+-------+
+    
+    \end{minted}
 
 \section{Simulazione e casi di test}
 
@@ -369,8 +429,6 @@ Viene riportato l'andamento di alcuni segnali in alcune parti della simulazione 
     \item test con cambio della sequenza al termine dell'esecuzione
     \item test con sequenze generate casualmente di lunghezza casuale
 \end{itemize}
-
-\pagebreak
 
 \subsubsection{Test con sequenza vuota}
 
@@ -389,7 +447,7 @@ nello stato di DONE senza mai scrivere nulla in memoria.
     \caption{Simulazione input lunghezza nulla}
 \end{figure}
 
-% \pagebreak
+\pagebreak
 
 \subsubsection{Test con sequenza di lunghezza massima}
 
@@ -457,8 +515,12 @@ la macchina si porta nello stato SINIT e si prepara ad accettare una nuova seque
 
 Si è scelto di scrivere il codice VHDL "a più basso livello" possibile in modo
 che la architettura risultante sia il più possibile simile a quella progettata.
-Si sarebbe potuto, in alternativa, usare più strutture \texttt{case} ed \texttt{if - elsif} 
+Si sarebbe potuto, in alternativa, ricorrere a più strutture \texttt{case} ed \texttt{if - elsif} 
 al posto di usare MUX e segnali aggiuntivi.
 
+Potrebbe essere possibile rimuovere alcuni stati della macchina a stati, come \texttt{SWNB}
+però questo porterebbe a maggiore complessità di controllo e a nessun risparmio sul numero di bit in quanto passerebbero
+da 14 a 13 o 12.
+Si avrebbe però un risparmio temporale su sequenze molto lunghe.
 
 \end{document}
