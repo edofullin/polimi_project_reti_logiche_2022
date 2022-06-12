@@ -50,9 +50,9 @@
 
 \subsection{Descrizione del progetto}
 
-Lo scopo del progetto è il design, tramite linguaggio VHDL di un modulo hardware sintetizzabile per FPGA
-in grado di applicare ad una sequenza di parole in input un codice convoluzionale $1/2$, che 
-può essere implementato attraverso la macchina a stati finiti in figura.
+Lo scopo del progetto è il design, tramite linguaggio VHDL, di un modulo hardware sintetizzabile per FPGA.
+Tale modulo deve essere in grado di applicare ad una sequenza di parole in input un codice convoluzionale $1/2$, che 
+può essere implementato attraverso la macchina a stati finiti (FSM) in figura \ref{fig:fsm_conv}.
 
 
 \begin{figure}[!ht]
@@ -62,25 +62,25 @@ può essere implementato attraverso la macchina a stati finiti in figura.
     \label{fig:fsm_conv}
 \end{figure}
 
-Il modulo deve quindi restituire in output (scrivendo in memoria) le uscite della macchina a stati finiti,
+\noindent \\ Il modulo deve quindi restituire in output, scrivendo in memoria, le uscite della macchina a stati finiti,
 bit per bit. % dire meglio
 
-\subsection{Esempio}
+\subsection{Esempio di funzionamento}
 
 La FSM prende in input la parola \verb+11001011+, che deve essere serializzata come
 1 al tempo 0, 1 al tempo 1, 0 al tempo 2 e così via.
 La macchina quindi, partendo dallo stato di reset 00 andrà nello stato 10 alla lettura
-del primo 1 producendo in output 11, passerà poi nello stato 3 producendo 10, nello stato 01
-producendo 10 e nello stato 00 producendo 11.
-Il primo byte di output sarà quindi 11100111, che dovrà essere scritto in memoria.
-Si nota quindi facilmente che la lunghezza della sequenza di output è esattamente doppia di quella 
-dell'input.
+del primo 1, producendo in output 11; passerà poi nello stato 11 producendo 10 e successivamente nello stato 01
+producendo 10 e infine nello stato 00 producendo 11.
+Il primo byte di output, relativo al primo nibble della parola di input, sarà quindi 11101011, che dovrà essere scritto in memoria.\\
+Per il secondo nibble di input e per i successivi si applica lo stesso principio di funzionamento sopra descritto.
+Si nota quindi facilmente per ogni nibble in input viene prodotto un byte in output (la lunghezza dell'output è doppia di quella dell'input). 
 
 \pagebreak
 
 \subsection{Specifiche del modulo da realizzare}
 
-Il modulo da descrivere è sincrono sincronizzato su un clock 'globale', non include la memoria su cui viene effettuato input/output e
+Il modulo hardware da descrivere è sincronizzato su un clock esterno, non include la memoria su cui viene effettuato input/output e
 deve implementare la seguente interfaccia verso l'esterno:
 
 \begin{minted}[]{vhdl}
@@ -101,7 +101,7 @@ deve implementare la seguente interfaccia verso l'esterno:
 
 \end{minted}
 
-In particolare:
+\noindent In particolare:
 
 \begin{itemize}
     \item \texttt{i\_clk} è il segnale di clock, generato dall'esterno
@@ -111,7 +111,7 @@ In particolare:
     \item \texttt{o\_address} è l'indizzo di memoria da cui si vuole leggere/scrivere
     \item \texttt{o\_done} è il segnale di fine computazione
     \item \texttt{o\_en} è il segnale di enable per la memoria RAM
-    \item \texttt{o\_we} è il segnale di scrittura per la memoria RAM
+    \item \texttt{o\_we} è il segnale di enable per la scrittura in memoria RAM
     \item \texttt{o\_data} è il byte da scrivere in memoria RAM
 \end{itemize}
 
@@ -119,11 +119,11 @@ In particolare:
 
 \section{Architettura}
 
-La architettura del componente è composta principalmente da due moduli: una macchina a stati di controllo
+L'architettura del componente è composta principalmente da due sottomoduli: una macchina a stati di controllo
 e da un datapath che gestisce il flusso dati.
 La FSM di controllo ha il compito di generare i segnali di controllo che attivano, disattivano o modificano
-il comportamento dei sottomoduli del datapath in base allo stato attuale della esecuzione.
-Il datapath gestisce l'intero flusso di dati, dalla lettura della memoria di input alla serializzazione, 
+il comportamento dei sottomoduli del datapath in base allo stato attuale dell'esecuzione.
+Il datapath gestisce l'intero flusso di dati, dalla lettura dalla memoria di input, alla serializzazione, 
 alla bufferizzazione del risultato e alla sua scrittura in memoria.
 
 \noindent Vengono illustrati più in dettaglio i singoli componenti.
@@ -133,15 +133,15 @@ alla bufferizzazione del risultato e alla sua scrittura in memoria.
 Il datapath è il componente che si occupa della gestione del flusso dati, incluso l'input e l'output
 da e verso la memoria RAM.
 Nella attuale implementazione è stata usata una solo entity VHDL, che può essere vista come l'insieme
-di più moduli collegati tra loro come dallo schema in figura.
+di più moduli collegati tra loro come illustrato dallo schema in figura \ref{fig:datapath_small}.
 I componenti del datapath sono pilotati dai segnali di controllo generati dalla macchina a stati che
 controlla il flusso di esecuzione.
 
 \begin{figure}[h!]
     \centering
     \includegraphics[scale=0.32]{datapath.png}
+    \caption{Schema ad alto livello del componente datapath}
     \label{fig:datapath_small}
-    \caption{Schema ad alto livello del componente datapath} %% TODO
 \end{figure}
 
 \subsubsection{Input Buffer}
@@ -153,12 +153,16 @@ che permette di specificare quale singolo bit interno al byte memorizzato si vuo
 
 \subsubsection{Contatore}
 
-Il contatore è un semplice contatore da 11 bit che tiene traccia del numero del bit corrente,
-in questo modo gli ultimi 3 bit (0-7) rappresentano il numero del bit corrente
-mentre i primi 8 bit rappresentano il numero (e quindi l'indirizzo) del byte corrente.
+Per quanto riguarda il contatore la scelta di progetto è stata quella di utilizzare un unico contatore a 11 bit.
+Il contatore memorizza l'indice del bit corrente relativo alla sequenza.
+In questo modo, è possibile ottenere il numero del bit corrente all'interno del byte corrente leggendo i 3 bit meno significativi 
+ed il numero del byte corrente all'interno della sequenza leggendo gli 8 più significativi.
 \pagebreak
 
-\noindent Il contatore è pilotato da un mux a due ingressi che in base agli ingressi fa fare al registro le seguenti cose:
+In questo modo è possibile utilizzare un solo contatore che automaticamente e contemporaneamente tiene traccia di entrambe le posizioni, 
+automaticamente passando al byte successivo quando viene terminata la lettura del byte corrente.
+
+\noindent Il contatore è pilotato da un mux a due ingressi che in base agli ingressi fa fare al registro le seguenti azioni:
 \begin{itemize}[itemsep=4pt, topsep=4pt]
     \item "00" - mantiene nel registro il valore corrente
     \item "01" - avanza di un bit
@@ -174,12 +178,12 @@ realizza il convoluzionatore 1/2 come da specifica.
 \subsubsection{Calcolatore Indirizzo di Output}
 
 Il calcolatore dell'indirizzo di output è una ALU completamente combinatoria che, a partire
-dal numero del bit corrente (in arrivo dal contatore) permette il calcolo dell'indirizzo di output.
+dal numero del bit corrente (in arrivo dal contatore), permette il calcolo dell'indirizzo di output.
 \\
-\noindent Visto che il convoluzionatore per ogni bit di input restituisce sempre 2 bit il numero del bit in output
-sarà sempre $2 * curr\_pos + sm\_w\_sel$ dove \texttt{curr\_pos} è il numero del bit corrente in arrivo dal
+\noindent Visto che il convoluzionatore per ogni bit di input restituisce sempre 2 bit, il numero del bit in output
+sarà sempre $2 * curr\_pos + sm\_w\_sel$, dove \texttt{curr\_pos} è il numero del bit corrente in arrivo dal
 contatore mentre \texttt{sm\_w\_sel} è un segnale di controllo generato dalla macchina a stati che è attivo
-(ad 1) se e solo se si vuole scrivere il secondo byte di output dal convoluzionatore.
+(ad 1) se e solo se si vuole scrivere il secondo bit di output dal convoluzionatore.
 Nel caso in cui la scrittura in memoria sia abilitata, viene anche sommata la costante \texttt{1000} 
 a cui viene sottratto \texttt{2} visto che un byte in input (quindi due in output) sarebbe usato dal numero di byte della sequenza 
 che non deve essere riportato in output.
@@ -206,13 +210,13 @@ with writesel select
 
 \subsubsection{Buffer di Output}
 
-Il buffer di output è un componente sequenziale/combinarico che memorizza temporaneamente il risultato della
+Il buffer di output è un componente sequenziale/combinatorio che memorizza temporaneamente il risultato della
 computazione, in attesa della scrittura in memoria. 
 Il componente si rende necessario a causa dell'indirizzamento al byte della memoria.
 
 \pagebreak
 
-Il buffer, quando abilitato alla scrittura, prende uno dei due bit in arrivo dal convoluzionatore tramite un mux 
+\noindent Il buffer, quando abilitato alla scrittura, prende uno dei due bit in arrivo dal convoluzionatore tramite un mux 
 pilotato dal segnale \texttt{sm\_w\_sel}, lo shifta a sinistra del numero di posizioni in arrivo
 dal calcolatore dell'indirizzo di output e lo scrive nella posizione corretta 
 mettendolo in bitwise OR con il valore attuale.
@@ -222,9 +226,9 @@ mettendolo in bitwise OR con il valore attuale.
 
 Il modulo è composto da una macchina a 14 stati il cui compito è quello di generare
 i segnali di controllo in grado di attivare o disattivare le parti del datapath atte a
-svolgere la funziona richiesta in quello specifico punto dell'esecuzione.\\
+svolgere la funzione richiesta in quello specifico punto dell'esecuzione.\\
 
-La macchina a stati è descritta come in figura, quando non è presente una label sulle transizioni
+\noindent La macchina a stati è descritta come in figura \ref{fig:ctrl_fsm}, quando non è presente una label sulle transizioni
 si intende che la transizione è incondizionata oppure, in presenza di altre transizioni
 in uscita dallo stesso stato, quando la condizione associata all'altra transizione è falsa.
 E' inoltre presente, ma non riportata nel diagramma, una transizione da tutti gli stati 
@@ -233,10 +237,11 @@ verso \texttt{SINIT} quando \texttt{i\_rst = 1}
 \begin{figure}[!h]
     \centering
     \includegraphics[scale=0.3]{fsm_controllo.png}
-    \label{fig:ctrl_fsm}
     \caption{FSM di controllo}
-    
+    \label{fig:ctrl_fsm}
 \end{figure}
+
+Di seguito si riporta la descrizione dei vari stati della macchina di controllo, oltre allo stato dei segnali di controllo.
 
 \subsubsection{INIT}
 Stato iniziale in cui si trova la macchina prima dell'avvio dell'esecuzione.\\
@@ -256,7 +261,7 @@ I segnali di controllo attivi sono:
     \item \texttt{sm\_rst} che resetta stato corrente e uscita corrente del convoluzionatore
     \item \texttt{curr\_mux} ad 11 che resetta a la posizione corrente
     \item \texttt{outbuff\_rst} che resetta il buffer di output
-    \item \texttt{outbuff\_load} che è necessario per resettare il bufferi di output
+    \item \texttt{outbuff\_load} che è necessario per resettare il buffer di output
 \end{itemize}
 
 \subsubsection{RNB}
@@ -279,7 +284,7 @@ I segnali di controllo attivi sono:
 \end{itemize}
 
 \subsubsection{SWB}
-Stato di stallo in attesa che il byte veng letto con successo.\\
+Stato di stallo in attesa che il byte venga letto con successo.\\
 I segnali di controllo attivi sono:
 \begin{itemize}
     \item \texttt{sr\_byte\_load} che attiva la lettura del registro che contiene il byte
@@ -317,7 +322,7 @@ Reset del buffer di output.\\
 I segnali di controllo attivi sono:
 \begin{itemize}
     \item \texttt{outbuff\_rst} che resetta il buffer di output
-    \item \texttt{outbuff\_load} che è necessario per resettare il bufferi di output
+    \item \texttt{outbuff\_load} che è necessario per resettare il buffer di output
 \end{itemize}
 
 \subsubsection{FIN}
@@ -342,7 +347,7 @@ I segnali di controllo attivi sono:
 
 \subsection{Report Utilization}
 
-Il componente è correttamente sintetizzabile, con la versione corrente di Vivado (2021.2) è implementabile su hardware FPGA
+Il modulo è correttamente sintetizzabile, con la versione corrente di Vivado (2021.2) ed è implementabile su hardware FPGA
 xc7a200tfbg484 usando 54 Lookup Tables (LUT) e 53 Flip-Flop.
 \\
 \\
@@ -391,7 +396,7 @@ alzare la frequenza del sistema.
 
 \pagebreak
 
-\section{Implementation}
+\section{Implementazione}
 
 La implementation riesce a ottimizzare ulteriormente il sistema, portando il numero di LUT a 51.
 
@@ -455,7 +460,7 @@ Il test con sequenza si lunghezza massima è stato quello con il maggior numero 
 Questo perchè dopo aver processato l'ultimo byte il registro \texttt{curr\_pos} va in overflow
 nello stato \texttt{FIN} tornando a zero.
 \noindent Questo comporta che quando la macchina a stati torna nello stato \texttt{SWNB} con il registro \texttt{curr\_pos} 
-che vale zero, minore di \texttt{nbytes}, quindi l'esecuzione riprende dall'inizio.
+che vale zero, essendo minore di \texttt{nbytes} l'esecuzione riprende dall'inizio.
 
 \noindent Per risolvere il problema è stato quindi introdotto un segnale \texttt{curr\_pos\_overflow} che viene alzato in maniera sequenziale
 quando il registro \texttt{curr\_pos} passa da 255 a 0 ed il segnale che pilota il contatore è in posizione "+1" (01)
@@ -511,16 +516,16 @@ la macchina si porta nello stato SINIT e si prepara ad accettare una nuova seque
     \caption{Simulazione fine di una sequenza e inizio della successiva}
 \end{figure}
 
-\section{Scelte progettuali}
+\section{Scelte progettuali e conclusioni}
 
 Si è scelto di scrivere il codice VHDL "a più basso livello" possibile in modo
 che la architettura risultante sia il più possibile simile a quella progettata.
 Si sarebbe potuto, in alternativa, ricorrere a più strutture \texttt{case} ed \texttt{if - elsif} 
-al posto di usare MUX e segnali aggiuntivi.
+al posto di usare MUX e segnali aggiuntivi.\\
 
-Potrebbe essere possibile rimuovere alcuni stati della macchina a stati, come \texttt{SWNB}
+\noindent Potrebbe essere possibile rimuovere alcuni stati della macchina a stati, come \texttt{SWNB}
 però questo porterebbe a maggiore complessità di controllo e a nessun risparmio sul numero di bit in quanto passerebbero
-da 14 a 13 o 12.
+da 14 a 13 o 12.\\
 Si avrebbe però un risparmio temporale su sequenze molto lunghe.
 
 \end{document}
