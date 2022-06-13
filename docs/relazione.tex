@@ -6,6 +6,7 @@
 \usepackage{graphicx}
 \usepackage[belowskip=-15pt,aboveskip=0pt]{caption}
 \usepackage{enumitem}
+\usepackage{hyperref}
 
 \setlist{nosep}
 
@@ -38,7 +39,7 @@
     }
 
     \vspace*{\fill}
-    \today
+    5 aprile 2022 (revisione \today)
 
 \end{titlepage}
 
@@ -347,10 +348,9 @@ I segnali di controllo attivi sono:
 
 \subsection{Report Utilization}
 
-Il modulo è correttamente sintetizzabile, con la versione corrente di Vivado (2021.2) ed è implementabile su hardware FPGA
+Il modulo è correttamente sintetizzabile, con la versione corrente di Vivado ed è implementabile su hardware FPGA
 xc7a200tfbg484 usando 54 Lookup Tables (LUT) e 53 Flip-Flop.
-\\
-\\
+
 \noindent In particolare, i 53 flip flop (1 bit a flip flop) sono così ditribuiti:
 \begin{itemize}[itemsep=4pt, topsep=4pt]
     \item 4 bit per la macchina a stati di controllo
@@ -382,9 +382,12 @@ xc7a200tfbg484 usando 54 Lookup Tables (LUT) e 53 Flip-Flop.
 
 \end{minted}
 
+
+\noindent Questi dati sono stati ottenuti con \texttt{Vivado v.2021.2 (lin64) Build 3367213 Tue Oct 19 02:47:39 MDT 2021} su OS Fedora Linux 35 in data 27 Maggio 2022.\\
+
 \subsection{Report Timing}
 
-Utilizzando un constraint con clock 15 ns, Vivado (versione 2021.2) riporta
+Utilizzando un constraint con clock 15 ns, Vivado riporta
 uno Slack (MET) di 11.675 ns ed un Data Path delay di 2.943 ns, quindi c'è margine per
 alzare la frequenza del sistema.
 \\
@@ -403,6 +406,7 @@ La implementation riesce a ottimizzare ulteriormente il sistema, portando il num
 \noindent Dopo la implementation lo Slack scende a 11.660ns ed il datapath delay sale a 3.317 ns \texttt{logic 1.240ns 37.382\%, route 2.077ns 62.618\%}
 
 \begin{minted}{text}
+    
 
 +-------------------------+------+-------+------------+-----------+-------+
 |        Site Type        | Used | Fixed | Prohibited | Available | Util% |
@@ -527,5 +531,16 @@ al posto di usare MUX e segnali aggiuntivi.\\
 però questo porterebbe a maggiore complessità di controllo e a nessun risparmio sul numero di bit in quanto passerebbero
 da 14 a 13 o 12.\\
 Si avrebbe però un risparmio temporale su sequenze molto lunghe.
+
+\subsection{Osservazioni}
+\label{sec:oss}
+\noindent Durante la revisione finale della relazione e del progetto, che è stata effettuata a giugno 2022 su una macchina ed un sistema operativo
+diversi rispetto a quelli che erano stati utilizzato per lo sviluppo del progetto le settimane precendenti 
+si è notato un leggero scostamento dei valori relativi alla componentistica utilizzata.
+In particolare il numero di LUT utilizzate è passato da 53 a 62.
+Avendo a disposizione (tramite git) i log ed i report precendenti ho appurato che il codice sorgente non è cambiato se non per
+il fatto che le varie entity, originariamente in file separati, sono state messe in un unico file.
+Questa relazione non è stata modificata e indica i valori precedenti, 
+sono però state aggiunte alcune informazioni circa l'ambiente che è stato utilizzato per ottenere i dati presenti. 
 
 \end{document}
